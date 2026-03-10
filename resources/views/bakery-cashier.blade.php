@@ -1,40 +1,20 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir - Nadya Bakery</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body { font-family: 'Poppins', sans-serif; }
-        /* Scrollbar cantik agar sesuai tema */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #be185d; }
-    </style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+        
+        <title>Kasir - Nadya Bakery</title>
+        
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        <script src="https://unpkg.com/@phosphor-icons/web"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50 text-gray-700 h-screen w-full flex overflow-hidden">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'pastel-pink': '#ffe4e6',
-                        'pastel-dark': '#be185d',
-                        'pastel-bg': '#fff1f2',
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-gray-50 text-gray-700 h-screen overflow-hidden flex">
-
-    <aside id="sidebar-menu" class="fixed md:static top-0 left-0 h-full w-64 bg-white border-r border-pink-100 flex flex-col justify-between shadow-2xl md:shadow-none z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <aside id="sidebar-menu" class="fixed md:static top-0 left-0 h-full w-64 shrink-0 bg-white border-r border-pink-100 flex flex-col justify-between shadow-2xl md:shadow-none z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         <div>
             <div class="h-20 flex items-center justify-between px-6 border-b border-pink-50">
                 <div class="flex items-center">
@@ -72,9 +52,9 @@
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden transition-opacity"></div>
 
-    <main class="flex-1 flex h-full">
+    <main class="flex-1 flex h-full min-w-0 overflow-hidden w-full">
         
-        <div class="flex-1 flex flex-col h-full bg-gray-50">
+        <div class="flex-1 flex flex-col h-full bg-gray-50 min-w-0 overflow-hidden w-full">
             <header class="py-4 md:h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
                 <div class="flex items-center justify-between">
                     <div>
@@ -91,7 +71,7 @@
                 </div>
             </header>
 
-            <div class="px-4 md:px-8 pt-4 pb-2 shrink-0">
+            <div class="px-4 md:px-8 pt-4 pb-2 shrink-0 w-full min-w-0">
                 <div class="flex space-x-3 overflow-x-auto pb-4" id="kategori-container">
                     <button id="btn-kategori-all" onclick="filterKategori('all')" class="kategori-btn bg-pastel-dark text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shrink-0 transition-colors duration-200">Semua</button>
                     
@@ -128,7 +108,7 @@
             </div>
         </div>
 
-        <div id="cart-panel" class="fixed md:static top-0 right-0 h-full w-full md:w-96 bg-white border-l border-gray-200 flex flex-col shadow-2xl z-50 transform translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div id="cart-panel" class="fixed md:static top-0 right-0 h-full w-[90vw] md:w-96 shrink-0 bg-white border-l border-gray-200 flex flex-col shadow-2xl z-50 transform translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="h-20 border-b border-gray-100 flex items-center justify-between px-6">
                 <h2 class="text-lg font-bold text-gray-800">Pesanan Baru</h2>
                 

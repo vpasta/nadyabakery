@@ -1,11 +1,23 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-
+/* Memasukkan warna kustom tema Nadya Bakery */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-pastel-pink: #ffe4e6;
+    --color-pastel-dark: #be185d;
+    --color-pastel-bg: #fff1f2;
+}
+
+/* Pindahkan CSS Scrollbar dari HTML ke sini agar lebih rapi */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #be185d; }
+
+/* Sembunyikan scrollbar khusus untuk kategori yang bisa digeser horizontal */
+#kategori-container::-webkit-scrollbar {
+    display: none;
+}
+#kategori-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
