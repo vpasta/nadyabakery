@@ -55,13 +55,9 @@
                     <i class="ph ph-receipt text-2xl"></i>
                     <span class="ml-3 font-medium">Riwayat</span>
                 </a>
-                <a href="#" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-pastel-dark rounded-xl transition">
+                <a href="/stok" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-pastel-dark rounded-xl transition">
                     <i class="ph ph-package text-2xl"></i>
                     <span class="ml-3 font-medium">Stok Produk</span>
-                </a>
-                <a href="#" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-pastel-dark rounded-xl transition">
-                    <i class="ph ph-gear text-2xl"></i>
-                    <span class="ml-3 font-medium">Pengaturan</span>
                 </a>
             </nav>
         </div>
