@@ -12,14 +12,14 @@
         <script src="https://unpkg.com/@phosphor-icons/web"></script>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     </head>
-    <body class="bg-gray-50 text-gray-700 h-screen w-full flex overflow-hidden">
+    <body class="bg-gray-50 text-dark h-screen w-full flex overflow-hidden">
 
-        <aside id="sidebar-menu" class="fixed md:static top-0 left-0 h-full w-64 shrink-0 bg-white border-r border-pink-100 flex flex-col justify-between shadow-2xl md:shadow-none z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <aside id="sidebar-menu" class="fixed md:static top-0 left-0 h-full w-64 shrink-0 bg-white border-r border-primary-soft flex flex-col justify-between shadow-2xl md:shadow-none z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         <div>
             <div class="h-20 flex items-center justify-between px-6 border-b border-pink-50">
                 <div class="flex items-center">
-                    <span class="text-3xl">🧁</span>
-                    <span class="ml-2 font-bold text-pastel-dark text-xl">Nadya Bakery</span>
+                    <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-14 h-14 mb-2 block">
+                    <span class="ml-1 font-bold text-primary text-xl">Nadya Bakery</span>
                 </div>
                 <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 transition">
                     <i class="ph ph-x text-2xl"></i>
@@ -27,15 +27,15 @@
             </div>
 
             <nav class="p-4 space-y-2">
-                <a href="#" class="flex items-center p-3 text-white bg-pastel-dark rounded-xl shadow-lg shadow-pink-200 transition">
+                <a href="#" class="flex items-center p-3 text-white bg-primary rounded-xl shadow-lg shadow-primary-soft transition">
                     <i class="ph ph-cash-register text-2xl"></i>
                     <span class="ml-3 font-medium">Kasir</span>
                 </a>
-                <a href="/riwayat" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-pastel-dark rounded-xl transition">
+                <a href="/riwayat" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-primary rounded-xl transition">
                     <i class="ph ph-receipt text-2xl"></i>
                     <span class="ml-3 font-medium">Riwayat</span>
                 </a>
-                <a href="/stok" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-pastel-dark rounded-xl transition">
+                <a href="/stok" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-primary rounded-xl transition">
                     <i class="ph ph-package text-2xl"></i>
                     <span class="ml-3 font-medium">Stok Produk</span>
                 </a>
@@ -50,7 +50,7 @@
         </div>
     </aside>
 
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden transition-opacity"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
     <main class="flex-1 flex h-full min-w-0 overflow-hidden w-full">
         
@@ -61,7 +61,7 @@
                         <h1 class="text-lg md:text-xl font-bold text-gray-800">Menu Hari Ini</h1>
                         <p id="tanggal-hari-ini" class="text-xs text-gray-400">Memuat tanggal...</p>
                     </div>
-                    <button onclick="toggleSidebar()" class="md:hidden text-gray-500 bg-gray-100 hover:bg-pink-100 hover:text-pastel-dark p-2 rounded-lg transition">
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-500 bg-gray-100 hover:bg-pink-100 hover:text-primary p-2 rounded-lg transition">
                         <i class="ph ph-list text-xl"></i>
                     </button>
                 </div>
@@ -73,10 +73,10 @@
 
             <div class="px-4 md:px-8 pt-4 pb-2 shrink-0 w-full min-w-0">
                 <div class="flex space-x-3 overflow-x-auto pb-4" id="kategori-container">
-                    <button id="btn-kategori-all" onclick="filterKategori('all')" class="kategori-btn bg-pastel-dark text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shrink-0 transition-colors duration-200">Semua</button>
+                    <button id="btn-kategori-all" onclick="filterKategori('all')" class="kategori-btn bg-primary text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shrink-0 transition-colors duration-200">Semua</button>
                     
                     @foreach($kategoris as $kategori)
-                        <button id="btn-kategori-{{ $kategori->id }}" onclick="filterKategori({{ $kategori->id }})" class="kategori-btn bg-white text-gray-500 hover:text-pastel-dark border border-gray-200 px-5 py-2 rounded-full text-sm font-medium shrink-0 transition-colors duration-200">
+                        <button id="btn-kategori-{{ $kategori->id }}" onclick="filterKategori({{ $kategori->id }})" class="kategori-btn bg-white text-gray-500 hover:text-primary border border-gray-200 px-5 py-2 rounded-full text-sm font-medium shrink-0 transition-colors duration-200">
                             {{ $kategori->nama_kategori }}
                         </button>
                     @endforeach
@@ -90,7 +90,7 @@
                         <div data-kategori="{{ $produk->kategori_id }}" onclick="tambahKeKeranjang({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->harga }}, '{{ $produk->gambar }}')" 
                             class="product-card relative bg-white p-3 md:p-4 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition border border-transparent hover:border-pink-200 group">
                             
-                            <span id="badge-produk-{{ $produk->id }}" class="absolute -top-2 -right-2 z-20 bg-pastel-dark text-white text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full shadow-lg border-2 border-white hidden">
+                            <span id="badge-produk-{{ $produk->id }}" class="absolute -top-2 -right-2 z-20 bg-primary text-white text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full shadow-lg border-2 border-white hidden">
                                 0
                             </span>
 
@@ -98,7 +98,7 @@
                                 <img src="{{ $produk->gambar }}" alt="{{ $produk->nama_produk }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                             </div>
                             <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight">{{ $produk->nama_produk }}</h3>
-                            <p class="text-pastel-dark font-bold text-xs md:text-sm mt-1">
+                            <p class="text-primary font-bold text-xs md:text-sm mt-1">
                                 Rp {{ number_format($produk->harga, 0, ',', '.') }}
                             </p>
                         </div>
@@ -113,7 +113,7 @@
                 <h2 class="text-lg font-bold text-gray-800">Pesanan Baru</h2>
                 
                 <div class="flex items-center space-x-3">
-                    <span class="bg-pink-100 text-pastel-dark text-xs font-bold px-2 py-1 rounded">Order #204</span>
+                    <span class="bg-pink-100 text-primary text-xs font-bold px-2 py-1 rounded">Order #204</span>
                     <button onclick="toggleCart()" class="md:hidden text-gray-400 hover:text-red-500 transition">
                         <i class="ph ph-x text-2xl"></i>
                     </button>
@@ -144,17 +144,17 @@
             
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <button class="py-2 border border-gray-300 rounded-lg text-sm hover:bg-white transition">Tunai</button>
-                    <button class="py-2 border border-pink-300 bg-pink-50 text-pastel-dark rounded-lg text-sm font-bold">QRIS</button>
+                    <button class="py-2 border border-pink-300 bg-pink-50 text-primary rounded-lg text-sm font-bold">QRIS</button>
                 </div>
 
-                <button onclick="prosesBayar()" class="w-full bg-pastel-dark text-white py-4 rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-pink-700 transition flex justify-between px-6">
+                <button onclick="prosesBayar()" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-primary-soft hover:bg-secondary transition flex justify-between px-6">
                     <span>Bayar Sekarang</span>
                     <span id="btn-text-total">Rp 0</span>
                 </button>
             </div>  
         </div>
 
-        <button onclick="toggleCart()" class="md:hidden fixed bottom-6 right-6 bg-pastel-dark text-white p-4 rounded-full shadow-2xl z-40 flex items-center justify-center hover:scale-105 transition">
+        <button onclick="toggleCart()" class="md:hidden fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-2xl z-40 flex items-center justify-center hover:scale-105 transition">
             <i class="ph ph-shopping-cart text-3xl"></i>
             <span id="mobile-cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white hidden">0</span>
         </button>
@@ -261,13 +261,13 @@
                             <img src="${item.gambar}" class="w-12 h-12 rounded-lg object-cover">
                             <div>
                                 <h4 class="font-bold text-sm text-gray-700 leading-tight">${item.nama}</h4>
-                                <p class="text-xs text-pastel-dark font-bold">${formatRupiah(item.harga)}</p>
+                                <p class="text-xs text-primary font-bold">${formatRupiah(item.harga)}</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <button onclick="ubahQty(${item.id}, -1)" class="w-6 h-6 rounded bg-gray-100 text-gray-600 hover:bg-pink-100 hover:text-pastel-dark transition font-bold">-</button>
+                            <button onclick="ubahQty(${item.id}, -1)" class="w-6 h-6 rounded bg-gray-100 text-gray-600 hover:bg-pink-100 hover:text-primary transition font-bold">-</button>
                             <span class="text-sm font-bold w-4 text-center">${item.qty}</span>
-                            <button onclick="ubahQty(${item.id}, 1)" class="w-6 h-6 rounded bg-pastel-dark text-white hover:bg-pink-700 transition font-bold">+</button>
+                            <button onclick="ubahQty(${item.id}, 1)" class="w-6 h-6 rounded bg-primary text-white hover:bg-secondary transition font-bold">+</button>
                         </div>
                     </div>
                 `;
@@ -392,7 +392,7 @@
             
             // Ubah semua tombol kembali ke warna putih (tidak aktif)
             allBtns.forEach(btn => {
-                btn.className = "kategori-btn bg-white text-gray-500 hover:text-pastel-dark border border-gray-200 px-5 py-2 rounded-full text-sm font-medium shrink-0 transition-colors duration-200";
+                btn.className = "kategori-btn bg-white text-gray-500 hover:text-primary border border-gray-200 px-5 py-2 rounded-full text-sm font-medium shrink-0 transition-colors duration-200";
             });
 
             // Beri warna pink (aktif) pada tombol yang sedang diklik
@@ -404,7 +404,7 @@
             }
             
             if (activeBtn) {
-                activeBtn.className = "kategori-btn bg-pastel-dark text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shrink-0 transition-colors duration-200";
+                activeBtn.className = "kategori-btn bg-primary text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shrink-0 transition-colors duration-200";
             }
 
             // 2. Memfilter (Menyembunyikan/Menampilkan) Produk

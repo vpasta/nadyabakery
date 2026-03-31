@@ -4,41 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stok Produk - Nadya Bakery</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <style> 
-        body { font-family: 'Poppins', sans-serif; } 
-        /* Scrollbar cantik agar sesuai tema */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #be185d; }
-    </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'pastel-pink': '#ffe4e6',
-                        'pastel-dark': '#be185d',
-                        'pastel-bg': '#fff1f2',
-                    }
-                }
-            }
-        }
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-gray-50 text-gray-700 h-screen overflow-hidden flex">
+<body class="bg-gray-50 text-dark h-screen w-full flex overflow-hidden">
 
-    <aside id="sidebar-menu" class="fixed md:static top-0 left-0 h-full w-64 bg-white border-r border-pink-100 flex flex-col justify-between shadow-2xl md:shadow-none z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden md:hidden transition-opacity" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar-menu" class="fixed md:static top-0 left-0 h-full w-64 shrink-0 bg-white border-r border-primary-soft flex flex-col justify-between shadow-2xl md:shadow-none z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         <div>
             <div class="h-20 flex items-center justify-between px-6 border-b border-pink-50">
                 <div class="flex items-center">
-                    <span class="text-3xl">🧁</span>
-                    <span class="ml-2 font-bold text-pastel-dark text-xl">Nadya Bakery</span>
+                    <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-14 h-14 mb-2 block">
+                    <span class="ml-1 font-bold text-primary text-xl">Nadya Bakery</span>
                 </div>
                 <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 transition">
                     <i class="ph ph-x text-2xl"></i>
@@ -46,21 +26,21 @@
             </div>
 
             <nav class="p-4 space-y-2">
-                <a href="/kasir" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-pastel-dark rounded-xl transition">
+                <a href="/kasir" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-primary rounded-xl transition">
                     <i class="ph ph-cash-register text-2xl"></i>
                     <span class="ml-3 font-medium">Kasir</span>
                 </a>
-                <a href="/riwayat" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-pastel-dark rounded-xl transition">
+                <a href="/riwayat" class="flex items-center p-3 text-gray-500 hover:bg-pink-50 hover:text-primary rounded-xl transition">
                     <i class="ph ph-receipt text-2xl"></i>
                     <span class="ml-3 font-medium">Riwayat</span>
                 </a>
-                <a href="/stok" class="flex items-center p-3 text-white bg-pastel-dark rounded-xl shadow-lg shadow-pink-200 transition">
+                <a href="/stok" class="flex items-center p-3 text-white bg-primary rounded-xl shadow-lg shadow-primary-soft transition">
                     <i class="ph ph-package text-2xl"></i>
                     <span class="ml-3 font-medium">Stok Produk</span>
                 </a>
             </nav>
         </div>
-
+        
         <div class="p-4">
             <a href="/logout" class="flex items-center p-3 text-red-400 hover:bg-red-50 rounded-xl transition">
                 <i class="ph ph-sign-out text-2xl"></i>
@@ -69,163 +49,125 @@
         </div>
     </aside>
 
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden transition-opacity"></div>
-
-    <main class="flex-1 flex flex-col h-full bg-gray-50">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative w-full">
         
-        <header class="py-4 md:h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between shadow-sm z-10 shrink-0">
-            <div class="flex items-center gap-3 md:gap-0">
-                <button onclick="toggleSidebar()" class="md:hidden text-gray-500 bg-gray-100 hover:bg-pink-100 hover:text-pastel-dark p-2 rounded-lg transition">
-                    <i class="ph ph-list text-xl"></i>
-                </button>
-                <div>
-                    <h1 class="text-lg md:text-xl font-bold text-gray-800">Stok Produk</h1>
-                    <p class="text-xs text-gray-400 hidden md:block">Pantau ketersediaan roti dan kue di sini</p>
-                </div>
+        <header class="md:hidden flex items-center justify-between bg-white p-4 shadow-sm border-b border-primary-soft shrink-0">
+            <div class="flex items-center space-x-2">
+                <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-10 h-10 block">
+                <span class="font-bold text-primary text-lg">Nadya Bakery</span>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="bg-pink-50 text-pastel-dark px-3 md:px-4 py-2 rounded-xl font-bold text-xs md:text-sm border border-pink-100">
-                    <span class="hidden md:inline">Total: </span>{{ $produks->count() }}
-                </div>
-                <button onclick="bukaModalTambah()" class="bg-pastel-dark text-white px-4 py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg hover:bg-pink-700 transition flex items-center gap-2">
-                    <i class="ph ph-plus-circle text-lg"></i>
-                    <span class="hidden md:inline">Tambah Produk</span>
-                </button>
-            </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 transition">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
         </header>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
-            <div class="bg-white rounded-2xl shadow-sm border border-pink-100 overflow-hidden">
-                
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-dark">Manajemen Stok</h1>
+                    <p class="text-gray-500 mt-1">Kelola harga dan ketersediaan produk.</p>
+                </div>
+                <button onclick="bukaModalTambah()" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-secondary transition flex items-center space-x-2 shadow-sm w-full sm:w-auto justify-center">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                    <span>Tambah Produk</span>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-primary-soft overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <table class="w-full text-left border-collapse min-w-150">
                         <thead>
-                            <tr class="bg-pastel-bg text-pastel-dark border-b border-pink-100">
-                                <th class="py-4 px-4 md:px-6 font-semibold text-sm">No</th>
-                                <th class="py-4 px-4 md:px-6 font-semibold text-sm">Nama Produk</th>
-                                <th class="py-4 px-4 md:px-6 font-semibold text-sm">Harga</th>
-                                <th class="py-4 px-4 md:px-6 font-semibold text-sm text-center">Sisa Stok</th>
-                                <th class="py-4 px-4 md:px-6 font-semibold text-sm text-center">Status</th>
-                                <th class="py-4 px-4 md:px-6 font-semibold text-sm text-center">Aksi</th>
+                            <tr class="bg-bg text-gray-500 text-sm border-b border-primary-soft">
+                                <th class="py-4 px-6 font-semibold w-16">No</th>
+                                <th class="py-4 px-6 font-semibold">Produk</th>
+                                <th class="py-4 px-6 font-semibold">Harga</th>
+                                <th class="py-4 px-6 font-semibold text-center">Stok</th>
+                                <th class="py-4 px-6 font-semibold text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                        
-                        @forelse($produks as $index => $produk)
-                            <tr class="hover:bg-pink-50/50 transition duration-150 group">
-                                <td class="py-4 px-4 md:px-6 font-medium text-gray-500">
-                                    {{ $index + 1 }}
+                            {{-- Looping Produk (Gunakan kode bawaanmu yang sudah ada) --}}
+                            @foreach($produks as $index => $produk)
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6 text-gray-500">{{ $index + 1 }}</td>
+                                <td class="py-4 px-6 font-medium text-dark flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-primary-soft flex items-center justify-center text-primary font-bold">
+                                        {{ substr($produk->nama_produk, 0, 1) }}
+                                    </div>
+                                    <span>{{ $produk->nama_produk }}</span>
                                 </td>
-                                <td class="py-4 px-4 md:px-6 font-bold text-gray-700 flex items-center gap-3">
-                                    @if($produk->gambar)
-                                        <img src="{{ asset('storage/' . $produk->gambar) }}" alt="{{ $produk->nama_produk }}" class="w-10 h-10 rounded-lg object-cover shadow-sm border border-gray-100">
-                                    @else
-                                        <div class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center text-pastel-dark">
-                                            <i class="ph ph-image"></i>
-                                        </div>
-                                    @endif
-                                    {{ $produk->nama_produk }}
+                                <td class="py-4 px-6 font-bold text-secondary">Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
+                                <td class="py-4 px-6 text-center">
+                                    <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $produk->stok > 10 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ $produk->stok }}
+                                    </span>
                                 </td>
-                                <td class="py-4 px-4 md:px-6 font-bold text-pastel-dark">
-                                    Rp {{ number_format($produk->harga, 0, ',', '.') }}
-                                </td>
-                                <td class="py-4 px-4 md:px-6 text-center font-bold text-gray-700">
-                                    {{ $produk->stok }}
-                                </td>
-                                <td class="py-4 px-4 md:px-6 text-center">
-                                    @if($produk->stok > 10)
-                                        <span class="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-3 py-1.5 rounded-full">
-                                            Aman
-                                        </span>
-                                    @elseif($produk->stok > 0)
-                                        <span class="bg-orange-100 text-orange-700 border border-orange-200 text-xs font-bold px-3 py-1.5 rounded-full">
-                                            Hampir Habis
-                                        </span>
-                                    @else
-                                        <span class="bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                                            Habis!
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="py-4 px-4 md:px-6 text-center space-x-2">
-                                    <button onclick="bukaModalEdit({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->harga }}, {{ $produk->stok }}, {{ $produk->kategori_id }})" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition">
-                                        <i class="ph ph-pencil-simple text-lg"></i>
-                                    </button>
-                                    <button onclick="konfirmasiHapus({{ $produk->id }})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition">
-                                        <i class="ph ph-trash text-lg"></i>
-                                    </button>
-                                    <form id="form-hapus-{{ $produk->id }}" action="/stok/{{ $produk->id }}" method="POST" class="hidden">
+                                <td class="py-4 px-6 text-center">
+                                    <div class="flex justify-center space-x-2">
+                                        <button onclick="bukaModalEdit({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->harga }}, {{ $produk->stok }}, {{ $produk->kategori_id }})" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition">
+                                            <i class="ph ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button onclick="konfirmasiHapus({{ $produk->id }})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </div>
+                                    <form id="form-hapus-{{ $produk->id }}" action="{{ url('/stok/'.$produk->id) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
                                     </form>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="py-8 text-center text-gray-400">Belum ada data produk saat ini.</td>
-                            </tr>
-                        @endforelse
-
+                            @endforeach
                         </tbody>
-                    </table>           
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-form" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="tutupModal()"></div>
+        
+        <div class="bg-white rounded-2xl w-full max-w-md mx-4 z-10 shadow-2xl overflow-hidden transform transition-all border border-primary-soft">
+            <div class="p-5 border-b border-primary-soft bg-bg flex justify-between items-center">
+                <h3 id="modal-title" class="text-lg font-bold text-dark">Tambah Produk</h3>
+                <button onclick="tutupModal()" class="text-gray-400 hover:text-primary transition"><i class="ph ph-x text-2xl"></i></button>
+            </div>
+            
+            <form id="form-produk" action="{{ url('/stok') }}" method="POST" class="p-6 space-y-4">
+                @csrf
+                <input type="hidden" name="_method" id="form-method" value="POST">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
+                    <input type="text" name="nama_produk" id="input-nama" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label>
+                        <input type="number" name="harga" id="input-harga" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Stok</label>
+                        <input type="number" name="stok" id="input-stok" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                    <select name="kategori_id" id="input-kategori" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                        @foreach($kategoris as $kat)
+                            <option value="{{ $kat->id }}">{{ $kat->nama_kategori }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
-            </div>
-        </div>
-        <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
-            <div class="bg-white w-full max-w-md p-6 md:p-8 rounded-3xl shadow-2xl transform transition-transform scale-95" id="modal-content">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 id="modal-title" class="text-xl font-bold text-gray-800">Tambah Produk Baru</h2>
-                    <button onclick="tutupModal()" class="text-gray-400 hover:text-red-500 transition">
-                        <i class="ph ph-x text-2xl"></i>
-                    </button>
+                <div class="pt-4 flex justify-end space-x-3 border-t border-gray-100 mt-6">
+                    <button type="button" onclick="tutupModal()" class="px-5 py-2 rounded-xl text-gray-500 font-medium hover:bg-gray-100 transition">Batal</button>
+                    <button type="submit" class="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-secondary transition shadow-sm">Simpan</button>
                 </div>
-    
-                <form id="form-produk" method="POST" action="/stok" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="_method" id="form-method" value="POST">
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-600 mb-1">Nama Produk</label>
-                            <input type="text" name="nama_produk" id="input-nama" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300">
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Harga (Rp)</label>
-                                <input type="number" name="harga" id="input-harga" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Jumlah Stok</label>
-                                <input type="number" name="stok" id="input-stok" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300">
-                            </div>
-                        </div>
-    
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-600 mb-1">Kategori</label>
-                            <select name="kategori_id" id="input-kategori" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300">
-                                <option value="">-- Pilih Kategori --</option>
-                                @foreach($kategoris as $kategori)
-                                    <option value="{{ $kategori->id }}">{{ $kategori->nama_kategori }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-    
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-600 mb-1">Foto Produk (Opsional)</label>
-                            <input type="file" name="gambar" id="input-gambar" accept="image/*" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pastel-dark hover:file:bg-pink-100">
-                            <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG. Biarkan kosong jika tidak ingin mengubah gambar.</p>
-                        </div>
-                    </div>
-    
-                    <div class="mt-8 flex gap-3">
-                        <button type="button" onclick="tutupModal()" class="w-1/2 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition">Batal</button>
-                        <button type="submit" class="w-1/2 py-3 rounded-xl font-bold text-white bg-pastel-dark hover:bg-pink-700 shadow-lg shadow-pink-200 transition">Simpan Data</button>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
+    </div>
     </main>
 
     <script>

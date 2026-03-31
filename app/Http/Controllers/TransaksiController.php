@@ -73,8 +73,10 @@ class TransaksiController extends Controller
     // Fungsi untuk menampilkan halaman riwayat transaksi
     public function riwayat()
     {
-        // Ambil semua data transaksi, urutkan dari yang terbaru (descending)
-        $transaksis = Transaksi::orderBy('created_at', 'desc')->get();
+        // Gunakan with() untuk memuat relasi sekaligus. Ini sangat mempercepat aplikasi!
+        $transaksis = Transaksi::with(['detailTransaksi.produk'])
+                               ->orderBy('created_at', 'desc')
+                               ->get();
         
         // Kirim data tersebut ke view 'bakery-history'
         return view('bakery-history', compact('transaksis'));

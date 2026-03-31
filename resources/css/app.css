@@ -1,23 +1,27 @@
 @import "tailwindcss";
 
-/* Memasukkan warna kustom tema Nadya Bakery */
+/* Definisi Tema Nadya Bakery (Vite/Tailwind 4) */
 @theme {
-    --color-pastel-pink: #ffe4e6;
-    --color-pastel-dark: #be185d;
-    --color-pastel-bg: #fff1f2;
+    --color-primary: #F58E8B;       /* Coral Pink */
+    --color-primary-soft: #FCD5CE;  /* Pink Muda */
+    --color-secondary: #2EC4B6;     /* Teal */
+    --color-dark: #2D2D2D;          /* Teks Gelap */
+    --color-bg: #FFF1F2;            /* Background */
 }
 
-/* Pindahkan CSS Scrollbar dari HTML ke sini agar lebih rapi */
+/* Global Styles */
+body { 
+    font-family: 'Poppins', sans-serif; 
+}
+
+/* Scrollbar Cantik Global */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #be185d; }
+::-webkit-scrollbar-thumb { background: #FCD5CE; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #F58E8B; }
 
-/* Sembunyikan scrollbar khusus untuk kategori yang bisa digeser horizontal */
-#kategori-container::-webkit-scrollbar {
-    display: none;
-}
 #kategori-container {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+#kategori-container::-webkit-scrollbar { display: none; }
