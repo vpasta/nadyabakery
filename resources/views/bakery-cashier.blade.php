@@ -6,6 +6,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
         
         <title>Kasir - Nadya Bakery</title>
+
+        <link rel="manifest" href="{{ asset('manifest.json') }}">
+        <meta name="theme-color" content="#F58E8B">
+        <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
         
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
@@ -84,26 +88,26 @@
             </div>
 
             <div class="flex-1 overflow-y-auto px-4 md:px-8 pt-2 pb-24 md:pb-8">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6" id="product-list">
-                    
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="product-list">
+    
                     @foreach($produks as $produk)
                         <div data-kategori="{{ $produk->kategori_id }}" onclick="tambahKeKeranjang({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->harga }}, '{{ $produk->gambar }}')" 
-                            class="product-card relative bg-white p-3 md:p-4 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition border border-transparent hover:border-pink-200 group">
-                            
-                            <span id="badge-produk-{{ $produk->id }}" class="absolute -top-2 -right-2 z-20 bg-primary text-white text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full shadow-lg border-2 border-white hidden">
+                            class="product-card relative bg-white p-3 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition border border-transparent hover:border-pink-200 group flex flex-col h-full"> <span id="badge-produk-{{ $produk->id }}" class="absolute -top-2 -right-2 z-20 bg-primary text-white text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full shadow-lg border-2 border-white hidden">
                                 0
                             </span>
-
-                            <div class="h-24 md:h-32 w-full rounded-xl overflow-hidden mb-3 relative">
+                
+                            <div class="w-full aspect-square rounded-xl overflow-hidden mb-3 relative shrink-0">
                                 <img src="{{ $produk->gambar }}" alt="{{ $produk->nama_produk }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                             </div>
-                            <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight">{{ $produk->nama_produk }}</h3>
-                            <p class="text-primary font-bold text-xs md:text-sm mt-1">
-                                Rp {{ number_format($produk->harga, 0, ',', '.') }}
-                            </p>
+                            
+                            <div class="flex-1 flex flex-col justify-between">
+                                <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight line-clamp-2">{{ $produk->nama_produk }}</h3>
+                                <p class="text-primary font-bold text-xs md:text-sm mt-2"> Rp {{ number_format($produk->harga, 0, ',', '.') }}
+                                </p>
+                            </div>
                         </div>
                     @endforeach
-            
+                
                 </div>
             </div>
         </div>
@@ -474,6 +478,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             updateTanggal();
         });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then((registration) => {
+                    console.log('PWA Service Worker berhasil didaftarkan!', registration.scope);
+                }).catch((error) => {
+                    console.log('PWA Service Worker gagal didaftarkan:', error);
+                });
+            });
+        }
     </script>
 </body>
 </html>

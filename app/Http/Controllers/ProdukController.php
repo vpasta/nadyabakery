@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Produk;
 use App\Models\Kategori;
+use illuminate\Support\Str;
 
 class ProdukController extends Controller
 {

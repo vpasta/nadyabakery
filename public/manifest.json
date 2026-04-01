@@ -1,0 +1,21 @@
+{
+    "name": "Nadya Bakery & Cake",
+    "short_name": "Nadya POS",
+    "start_url": "/login",
+    "display": "standalone",
+    "background_color": "#FFF1F2",
+    "theme_color": "#F58E8B",
+    "description": "Sistem Kasir Nadya Bakery & Cake",
+    "icons": [
+        {
+            "src": "/images/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
