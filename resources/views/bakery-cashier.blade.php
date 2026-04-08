@@ -97,7 +97,7 @@
                             </span>
                 
                             <div class="w-full aspect-square rounded-xl overflow-hidden mb-3 relative shrink-0">
-                                <img src="{{ $produk->gambar }}" alt="{{ $produk->nama_produk }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                <img src="{{ asset('storage/' . $produk->gambar) }}" alt="{{ $produk->nama_produk }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                             </div>
                             
                             <div class="flex-1 flex flex-col justify-between">

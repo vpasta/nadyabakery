@@ -92,14 +92,18 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            {{-- Looping Produk (Gunakan kode bawaanmu yang sudah ada) --}}
                             @foreach($produks as $index => $produk)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="py-4 px-6 text-gray-500">{{ $index + 1 }}</td>
+                                
                                 <td class="py-4 px-6 font-medium text-dark flex items-center space-x-3">
-                                    <div class="w-10 h-10 rounded-lg bg-primary-soft flex items-center justify-center text-primary font-bold">
-                                        {{ substr($produk->nama_produk, 0, 1) }}
-                                    </div>
+                                    @if($produk->gambar)
+                                        <img src="{{ asset('storage/' . $produk->gambar) }}" alt="{{ $produk->nama_produk }}" class="w-10 h-10 rounded-lg object-cover border border-gray-200">
+                                    @else
+                                        <div class="w-10 h-10 rounded-lg bg-primary-soft flex items-center justify-center text-primary font-bold">
+                                            {{ substr($produk->nama_produk, 0, 1) }}
+                                        </div>
+                                    @endif
                                     <span>{{ $produk->nama_produk }}</span>
                                 </td>
                                 <td class="py-4 px-6 font-bold text-secondary">Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
@@ -140,7 +144,7 @@
                 <button onclick="tutupModal()" class="text-gray-400 hover:text-primary transition"><i class="ph ph-x text-2xl"></i></button>
             </div>
             
-            <form id="form-produk" action="{{ url('/stok') }}" method="POST" class="p-6 space-y-4">
+            <form id="form-produk" action="{{ url('/stok') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                 @csrf
                 <input type="hidden" name="_method" id="form-method" value="POST">
                 
@@ -148,6 +152,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
                     <input type="text" name="nama_produk" id="input-nama" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
                 </div>
+                
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label>
@@ -158,6 +163,7 @@
                         <input type="number" name="stok" id="input-stok" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
                     </div>
                 </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                     <select name="kategori_id" id="input-kategori" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
@@ -165,6 +171,23 @@
                             <option value="{{ $kat->id }}">{{ $kat->nama_kategori }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <div class="flex flex-col items-center mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2 w-full text-left">Upload Foto (Opsional)</label>
+                    
+                    <div class="relative flex flex-col items-center justify-center w-40 h-40 border-2 border-gray-300 border-dashed rounded-2xl bg-gray-50 hover:bg-gray-100 transition overflow-hidden group">
+                        
+                        <input type="file" name="gambar" id="input-gambar" accept="image/jpeg, image/png, image/jpg" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" onchange="previewImage(event)">
+                        
+                        <img id="preview-gambar" src="" class="absolute inset-0 w-full h-full object-cover z-10 hidden" alt="Preview">
+
+                        <div id="teks-upload" class="flex flex-col items-center justify-center z-0">
+                            <i class="ph ph-image text-4xl text-gray-400 mb-2 group-hover:text-primary transition"></i>
+                            <span class="text-sm font-semibold text-gray-500">Pilih Foto</span>
+                            <span class="text-[10px] text-gray-400 mt-1">Rasio 1:1 (Maks 2MB)</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="pt-4 flex justify-end space-x-3 border-t border-gray-100 mt-6">
@@ -201,6 +224,16 @@
             });
         @endif
 
+        // Menampilkan Pesan Error Validasi dari Controller
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menyimpan!',
+                html: '<ul class="text-left text-sm text-red-500">@foreach($errors->all() as $error)<li>- {{ $error }}</li>@endforeach</ul>',
+                confirmButtonColor: '#be185d'
+            });
+        @endif
+
         const modalForm = document.getElementById('modal-form');
         const formProduk = document.getElementById('form-produk');
         const modalTitle = document.getElementById('modal-title');
@@ -208,14 +241,26 @@
 
         function bukaModalTambah() {
             modalTitle.innerText = "Tambah Produk Baru";
-            formProduk.action = "/stok"; // Arahkan ke route Store
-            formMethod.value = "POST"; // Gunakan metode POST
+            formProduk.action = "/stok"; 
+            formMethod.value = "POST"; 
             
-            // Kosongkan form
+            // Reset input teks
             document.getElementById('input-nama').value = "";
             document.getElementById('input-harga').value = "";
             document.getElementById('input-stok').value = "";
             document.getElementById('input-kategori').value = "";
+
+            // Reset input gambar dan preview dengan aman
+            const inputGambar = document.getElementById('input-gambar');
+            const previewGambar = document.getElementById('preview-gambar');
+            const teksUpload = document.getElementById('teks-upload');
+
+            if(inputGambar) inputGambar.value = ""; 
+            if(previewGambar) {
+                previewGambar.src = ""; 
+                previewGambar.classList.add('hidden');
+            }
+            if(teksUpload) teksUpload.classList.remove('hidden');
 
             modalForm.classList.remove('hidden');
         }
@@ -230,6 +275,17 @@
             document.getElementById('input-harga').value = harga;
             document.getElementById('input-stok').value = stok;
             document.getElementById('input-kategori').value = kategori_id;
+
+            const inputGambar = document.getElementById('input-gambar');
+            const previewGambar = document.getElementById('preview-gambar');
+            const teksUpload = document.getElementById('teks-upload');
+
+            if(inputGambar) inputGambar.value = ""; 
+            if(previewGambar) {
+                previewGambar.src = ""; 
+                previewGambar.classList.add('hidden');
+            }
+            if(teksUpload) teksUpload.classList.remove('hidden');
 
             modalForm.classList.remove('hidden');
         }
@@ -264,6 +320,50 @@
                     console.log('PWA Service Worker gagal didaftarkan:', error);
                 });
             });
+        }
+
+        // Fungsi untuk menampilkan preview gambar dan validasi ukuran
+        function previewImage(event) {
+            const input = event.target;
+            const preview = document.getElementById('preview-gambar');
+            const teks = document.getElementById('teks-upload');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Validasi Ukuran File (Maksimal 2MB = 2 * 1024 * 1024 bytes)
+                if (file.size > 2 * 1024 * 1024) {
+                    // Munculkan notifikasi error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ukuran Terlalu Besar!',
+                        text: 'Maksimal ukuran foto adalah 2MB.',
+                        confirmButtonColor: '#be185d'
+                    });
+                    
+                    // Reset input agar file batal dipilih
+                    input.value = "";
+                    preview.src = "";
+                    preview.classList.add('hidden');
+                    teks.classList.remove('hidden');
+                    
+                    return; // Hentikan eksekusi kode di sini
+                }
+
+                // Jika ukuran aman, lanjut tampilkan preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden'); 
+                    teks.classList.add('hidden'); 
+                }
+                reader.readAsDataURL(file);
+            } else {
+                // Jika user batal memilih file
+                preview.src = "";
+                preview.classList.add('hidden');
+                teks.classList.remove('hidden');
+            }
         }
     </script>
 </body>
