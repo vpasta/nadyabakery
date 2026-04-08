@@ -43,6 +43,10 @@
                     <i class="ph ph-package text-2xl"></i>
                     <span class="ml-3 font-medium">Stok Produk</span>
                 </a>
+                <a href="/pengaturan" class="flex items-center p-3 {{ Request::is('pengaturan') ? 'text-white bg-primary rounded-xl shadow-lg' : 'text-gray-500 hover:bg-pink-50 hover:text-primary rounded-xl' }} transition">
+                    <i class="ph ph-gear text-2xl"></i>
+                    <span class="ml-3 font-medium">Pengaturan</span>
+                </a>
             </nav>
         </div>
 
@@ -132,23 +136,15 @@
             
             <div class="bg-gray-50 p-6 border-t border-gray-200 shrink-0">
                 <div class="space-y-2 mb-4">
-                    <div class="flex justify-between text-sm text-gray-500">
-                        <span>Subtotal</span>
-                        <span id="text-subtotal">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between text-sm text-gray-500">
-                        <span>Pajak (10%)</span>
-                        <span id="text-pajak">Rp 0</span>
-                    </div>
                     <div class="flex justify-between text-lg font-bold text-gray-800 mt-2">
-                        <span>Total</span>
+                        <span>Total Pembayaran</span>
                         <span id="text-total">Rp 0</span>
                     </div>
                 </div>
             
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <button class="py-2 border border-gray-300 rounded-lg text-sm hover:bg-white transition">Tunai</button>
-                    <button class="py-2 border border-pink-300 bg-pink-50 text-primary rounded-lg text-sm font-bold">QRIS</button>
+                    <button id="btn-tunai" onclick="pilihMetode('tunai')" class="py-2 border border-pink-300 bg-pink-50 text-primary rounded-lg text-sm font-bold transition">Tunai</button>
+                    <button id="btn-qris" onclick="pilihMetode('qris')" class="py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 rounded-lg text-sm font-bold transition">QRIS</button>
                 </div>
 
                 <button onclick="prosesBayar()" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-primary-soft hover:bg-secondary transition flex justify-between px-6">
@@ -168,6 +164,7 @@
     <script>
         // 1. Ini adalah "kotak penyimpanan" kita (Array)
         let keranjang = [];
+        let metodePembayaran = 'tunai';
 
         // Fungsi untuk membuka/menutup panel keranjang di mode mobile
         function toggleCart() {
@@ -192,9 +189,24 @@
             }
         }
 
-        // 2. Fungsi untuk memformat angka jadi format Rupiah (contoh: 25000 -> 25.000)
+        //Fungsi untuk memformat angka jadi format Rupiah (contoh: 25000 -> 25.000)
         function formatRupiah(angka) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+
+        // Fungsi untuk mengubah gaya tombol dan menyimpan metode yang dipilih
+        function pilihMetode(metode) {
+            metodePembayaran = metode;
+            const btnTunai = document.getElementById('btn-tunai');
+            const btnQris = document.getElementById('btn-qris');
+
+            if (metode === 'tunai') {
+                btnTunai.className = "py-2 border border-pink-300 bg-pink-50 text-primary rounded-lg text-sm font-bold transition";
+                btnQris.className = "py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 rounded-lg text-sm font-bold transition";
+            } else {
+                btnQris.className = "py-2 border border-pink-300 bg-pink-50 text-primary rounded-lg text-sm font-bold transition";
+                btnTunai.className = "py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 rounded-lg text-sm font-bold transition";
+            }
         }
     
         // 3. Fungsi yang dipanggil saat produk diklik
@@ -303,27 +315,115 @@
     
         // 6. Fungsi untuk menghitung Pajak dan Total
         function updateTotal(subtotal) {
-            let pajak = subtotal * 0.10; // Pajak 10%
-            let total = subtotal + pajak;
-    
-            document.getElementById('text-subtotal').innerText = formatRupiah(subtotal);
-            document.getElementById('text-pajak').innerText = formatRupiah(pajak);
+            let total = subtotal; // Total murni dari harga barang
+            
             document.getElementById('text-total').innerText = formatRupiah(total);
             document.getElementById('btn-text-total').innerText = formatRupiah(total);
         }
 
         // Fungsi untuk mengirim data ke server
+        // Fungsi untuk mengirim data ke server
         async function prosesBayar() {
-        if (keranjang.length === 0) {
-            // Mengganti alert browser dengan SweetAlert Peringatan
-            Swal.fire({
-                title: 'Keranjang Kosong!',
-                text: 'Silakan pilih produk terlebih dahulu.',
-                icon: 'warning',
-                confirmButtonColor: '#be185d', // Warna pastel-dark
-                confirmButtonText: 'Oke'
-            });
-            return;
+            if (keranjang.length === 0) {
+                Swal.fire({
+                    title: 'Keranjang Kosong!',
+                    text: 'Silakan pilih produk terlebih dahulu.',
+                    icon: 'warning',
+                    confirmButtonColor: '#be185d',
+                    confirmButtonText: 'Oke'
+                });
+                return;
+            }
+
+            // --- LOGIKA MUNCULKAN QRIS ---
+            if (metodePembayaran === 'qris') {
+                // Tampilkan popup gambar QRIS
+                const resultQris = await Swal.fire({
+                    title: 'Scan QRIS',
+                    html: `
+                        <p class="text-sm text-gray-500 mb-4">Minta pelanggan scan kode di bawah ini.</p>
+                        <img src="{{ asset('storage/images/qris_aktif.png') }}" alt="QRIS Toko"> class="w-64 h-64 mx-auto object-cover rounded-xl border-2 border-gray-100 shadow-sm">
+                        <p class="font-bold text-xl mt-4 text-primary">${document.getElementById('text-total').innerText}</p>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonColor: '#be185d',
+                    cancelButtonColor: '#9ca3af',
+                    confirmButtonText: 'Sudah Dibayar',
+                    cancelButtonText: 'Batal'
+                });
+
+                // Jika kasir menekan "Batal", hentikan proses bayar
+                if (!resultQris.isConfirmed) {
+                    return;
+                }
+            }
+            // -----------------------------
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            try {
+                Swal.fire({
+                    title: 'Memproses Pembayaran...',
+                    text: 'Mohon tunggu sebentar',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch('/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken 
+                    },
+                    // Kita juga kirim data metode_pembayaran ke controller Laravel
+                    body: JSON.stringify({ 
+                        keranjang: keranjang,
+                        metode_pembayaran: metodePembayaran 
+                    }) 
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        title: 'Yeay, Berhasil! 🎉',
+                        html: `Pembayaran sukses diproses.<br><br><b>Nomor Nota:</b> ${result.nota}<br><b>Metode:</b> ${metodePembayaran.toUpperCase()}`,
+                        icon: 'success',
+                        background: '#fff1f2', 
+                        color: '#be185d', 
+                        confirmButtonColor: '#be185d',
+                        confirmButtonText: 'Selesai'
+                    });
+                    
+                    keranjang = []; 
+                    if (typeof isKeranjangBuka !== 'undefined') {
+                        isKeranjangBuka = false; 
+                    }
+                    renderKeranjang(); 
+                    
+                    // Kembalikan tombol ke Tunai untuk transaksi berikutnya
+                    pilihMetode('tunai');
+
+                } else {
+                    Swal.fire({
+                        title: 'Oops! Gagal',
+                        text: result.message,
+                        icon: 'error',
+                        confirmButtonColor: '#be185d'
+                    });
+                }
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire({
+                    title: 'Terjadi Kesalahan',
+                    text: 'Gangguan jaringan saat menghubungi server.',
+                    icon: 'error',
+                    confirmButtonColor: '#be185d'
+                });
+            }
         }
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -388,7 +488,7 @@
                 confirmButtonColor: '#be185d'
             });
         }
-    }
+    
         // Fungsi untuk memfilter produk berdasarkan kategori
         function filterKategori(kategoriId) {
             // 1. Mengatur warna tombol kategori

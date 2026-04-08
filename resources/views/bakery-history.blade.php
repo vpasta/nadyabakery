@@ -41,6 +41,10 @@
                     <i class="ph ph-package text-2xl"></i>
                     <span class="ml-3 font-medium">Stok Produk</span>
                 </a>
+                <a href="/pengaturan" class="flex items-center p-3 {{ Request::is('pengaturan') ? 'text-white bg-primary rounded-xl shadow-lg' : 'text-gray-500 hover:bg-pink-50 hover:text-primary rounded-xl' }} transition">
+                    <i class="ph ph-gear text-2xl"></i>
+                    <span class="ml-3 font-medium">Pengaturan</span>
+                </a>
             </nav>
         </div>
 

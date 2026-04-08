@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\SettingsController;
 use App\Models\Produk;
 use App\Models\Kategori;
 
@@ -38,4 +39,8 @@ Route::middleware('auth')->group(function () {
 
     // Proses Checkout
     Route::post('/checkout', [TransaksiController::class, 'prosesCheckout']);
+
+    Route::get('/pengaturan', [SettingsController::class, 'index']);
+    Route::post('/pengaturan/profile', [SettingsController::class, 'updateProfile']);
+    Route::post('/pengaturan/qris', [SettingsController::class, 'updateQris']);
 });
