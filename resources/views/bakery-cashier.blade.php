@@ -360,32 +360,30 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    Swal.fire({
-                        title: 'Yeay, Berhasil! 🎉',
-                        html: `Pembayaran sukses diproses.<br><br><b>Nomor Nota:</b> ${result.nota}<br><b>Metode:</b> ${metodePembayaran.toUpperCase()}`,
-                        icon: 'success',
-                        background: '#fff1f2', 
-                        color: '#2EC4B6', 
-                        confirmButtonColor: '#2EC4B6',
-                        confirmButtonText: 'Selesai'
-                    });
-                    
-                    keranjang = []; 
-                    if (typeof isKeranjangBuka !== 'undefined') {
-                        isKeranjangBuka = false; 
+                Swal.fire({
+                    title: 'Yeay, Berhasil! 🎉',
+                    html: `Pembayaran sukses.<br><b>Nomor Nota:</b> ${result.nota}`,
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: 'Cetak Nota',
+                    cancelButtonText: 'Selesai',
+                    confirmButtonColor: '#be185d',
+                }).then((swalResult) => {
+                    if (swalResult.isConfirmed) {
+                        // Panggil fungsi cetak dengan data yang ada di keranjang
+                        cetakNota({
+                            nota: result.nota,
+                            kasir: 'Kasir Nadya',
+                            items: keranjang,
+                            total: keranjang.reduce((acc, item) => acc + (item.harga * item.qty), 0),
+                            pajak: keranjang.reduce((acc, item) => acc + (item.harga * item.qty), 0) * 0.1,
+                            grandTotal: keranjang.reduce((acc, item) => acc + (item.harga * item.qty), 0) * 1.1
+                        });
                     }
-                    renderKeranjang(); 
-                    
-                    pilihMetode('tunai');
-
-                } else {
-                    Swal.fire({
-                        title: 'Oops! Gagal',
-                        text: result.message,
-                        icon: 'error',
-                        confirmButtonColor: '#2EC4B6'
-                    });
-                }
+                    keranjang = [];
+                    renderKeranjang();
+                });
+            }
 
             } catch (error) {
                 console.error(error);
@@ -446,26 +444,84 @@
             });
         }
 
-        function updateTanggal() {
+        function updateJam() {
             const elemenTanggal = document.getElementById('tanggal-hari-ini');
-            const hariIni = new Date();
-            const opsiFormat = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            };
-            
-            const tanggalDiformat = hariIni.toLocaleDateString('id-ID', opsiFormat);
-            
+            const sekarang = new Date();
+    
+            const opsiTanggal = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formatTanggal = sekarang.toLocaleDateString('id-ID', opsiTanggal);
+    
+            // Menambahkan format jam:menit:detik
+            const formatJam = sekarang.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+    
             if (elemenTanggal) {
-                elemenTanggal.innerText = tanggalDiformat;
+                elemenTanggal.innerText = `${formatTanggal} | ${formatJam}`;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateTanggal();
-        });
+        // Jalankan setiap 1 detik agar jam terus berdetak
+        setInterval(updateJam, 1000);
+
+        function cetakNota(data) {
+            const printWindow = window.open('', '_blank', 'width=300,height=600');
+    
+            // Template HTML untuk nota thermal
+            const htmlNota = `
+                <html>
+                <head>
+                <title>Cetak Nota - ${data.nota}</title>
+                <style>
+                @page { size: 58mm auto; margin: 0; }
+                body { font-family: 'Courier New', Courier, monospace; width: 58mm; padding: 5px; font-size: 12px; }
+                .text-center { text-align: center; }
+                .line { border-bottom: 1px dashed #000; margin: 5px 0; }
+                table { width: 100%; border-collapse: collapse; }
+                .text-right { text-align: right; }
+                </style>
+                </head>
+                <body onload="window.print(); window.close();">
+                <div class="text-center">
+                <strong>NADYA BAKERY</strong><br>
+                Jl. Contoh No. 123, Jakarta<br>
+                Telp: 0812-3456-7890
+                </div>
+                <div class="line"></div>
+                <div>
+                Nota : ${data.nota}<br>
+                Tgl  : ${new Date().toLocaleString('id-ID')}<br>
+                Kasir: ${data.kasir}
+                </div>
+                <div class="line"></div>
+                <table>
+                ${data.items.map(item => `
+                    <tr>
+                        <td colspan="2">${item.nama}</td>
+                    </tr>
+                    <tr>
+                        <td>${item.qty} x ${item.harga.toLocaleString()}</td>
+                        <td class="text-right">${(item.qty * item.harga).toLocaleString()}</td>
+                    </tr>
+                `).join('')}
+                </table>
+                <div class="line"></div>
+                <table>
+                <tr><td>Total</td><td class="text-right">${data.total.toLocaleString()}</td></tr>
+                <tr><td>Pajak (10%)</td><td class="text-right">${data.pajak.toLocaleString()}</td></tr>
+                <tr style="font-weight:bold;"><td>GRAND TOTAL</td><td class="text-right">${data.grandTotal.toLocaleString()}</td></tr>
+                </table>
+                <div class="line"></div>
+                <div class="text-center">Terima Kasih Atas Kunjungan Anda!</div>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(htmlNota);
+            printWindow.document.close();
+        }       
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
