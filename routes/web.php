@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
 
     // Route untuk Riwayat Transaksi
     Route::get('/riwayat', [TransaksiController::class, 'riwayat']);
+    Route::delete('/riwayat/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
 
     // Halaman & CRUD Stok Produk
     Route::get('/stok', [ProdukController::class, 'index']);
@@ -43,4 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pengaturan', [SettingsController::class, 'index']);
     Route::post('/pengaturan/profile', [SettingsController::class, 'updateProfile']);
     Route::post('/pengaturan/qris', [SettingsController::class, 'updateQris']);
+    Route::post('/pengaturan/kategori', [SettingsController::class, 'storeKategori'])->name('kategori.store');
+    Route::put('/pengaturan/kategori/{id}', [SettingsController::class, 'updateKategori'])->name('kategori.update');
+    Route::delete('/pengaturan/kategori/{id}', [SettingsController::class, 'destroyKategori'])->name('kategori.destroy');
 });

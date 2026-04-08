@@ -95,7 +95,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="product-list">
     
                     @foreach($produks as $produk)
-                        <div data-kategori="{{ $produk->kategori_id }}" onclick="tambahKeKeranjang({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->harga }}, '{{ $produk->gambar }}')" 
+                        <div data-kategori="{{ $produk->kategori_id }}" onclick="tambahKeKeranjang({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->harga }}, '{{ asset('storage/' . $produk->gambar) }}')" 
                             class="product-card relative bg-white p-3 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition border border-transparent hover:border-pink-200 group flex flex-col h-full"> <span id="badge-produk-{{ $produk->id }}" class="absolute -top-2 -right-2 z-20 bg-primary text-white text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full shadow-lg border-2 border-white hidden">
                                 0
                             </span>
@@ -121,7 +121,9 @@
                 <h2 class="text-lg font-bold text-gray-800">Pesanan Baru</h2>
                 
                 <div class="flex items-center space-x-3">
-                    <span class="bg-pink-100 text-primary text-xs font-bold px-2 py-1 rounded">Order #204</span>
+                    <div class="flex items-center space-x-3">
+                        <span class="bg-pink-100 text-primary text-xs font-bold px-2 py-1 rounded">Status: Aktif</span>
+                    </div>
                     <button onclick="toggleCart()" class="md:hidden text-gray-400 hover:text-red-500 transition">
                         <i class="ph ph-x text-2xl"></i>
                     </button>
@@ -162,39 +164,31 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // 1. Ini adalah "kotak penyimpanan" kita (Array)
         let keranjang = [];
         let metodePembayaran = 'tunai';
 
-        // Fungsi untuk membuka/menutup panel keranjang di mode mobile
         function toggleCart() {
-        const cartPanel = document.getElementById('cart-panel');
-
-        // Toggle class translate-x-full (menyembunyikan/menampilkan)
-        cartPanel.classList.toggle('translate-x-full');
+            const cartPanel = document.getElementById('cart-panel');
+            cartPanel.classList.toggle('translate-x-full');
         }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar-menu');
             const overlay = document.getElementById('sidebar-overlay');
             
-            // Toggle class -translate-x-full (menggeser ke kiri 100%)
             sidebar.classList.toggle('-translate-x-full');
             
-            // Atur visibilitas Overlay gelap
             if (sidebar.classList.contains('-translate-x-full')) {
-                overlay.classList.add('hidden'); // Sembunyikan jika sidebar tertutup
+                overlay.classList.add('hidden'); 
             } else {
-                overlay.classList.remove('hidden'); // Munculkan jika sidebar terbuka
+                overlay.classList.remove('hidden'); 
             }
         }
 
-        //Fungsi untuk memformat angka jadi format Rupiah (contoh: 25000 -> 25.000)
         function formatRupiah(angka) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         }
 
-        // Fungsi untuk mengubah gaya tombol dan menyimpan metode yang dipilih
         function pilihMetode(metode) {
             metodePembayaran = metode;
             const btnTunai = document.getElementById('btn-tunai');
@@ -209,16 +203,12 @@
             }
         }
     
-        // 3. Fungsi yang dipanggil saat produk diklik
         function tambahKeKeranjang(id, nama, harga, gambar) {
-            // Cek apakah produk sudah ada di keranjang sebelumnya
             let itemSudahAda = keranjang.find(item => item.id === id);
     
             if (itemSudahAda) {
-                // Jika sudah ada, tambahkan jumlahnya (qty) saja
                 itemSudahAda.qty += 1;
             } else {
-                // Jika belum ada, masukkan produk baru ke keranjang dengan qty 1
                 keranjang.push({
                     id: id,
                     nama: nama,
@@ -227,17 +217,13 @@
                     qty: 1
                 });
             }
-    
-            // Setelah data keranjang berubah, update tampilan layarnya!
             renderKeranjang();
         }
     
-        // 4. Fungsi untuk mengubah jumlah barang di keranjang (+ atau -)
         function ubahQty(id, jumlah) {
             let item = keranjang.find(item => item.id === id);
             if (item) {
                 item.qty += jumlah;
-                // Jika jumlahnya jadi 0, hapus dari keranjang
                 if (item.qty <= 0) {
                     keranjang = keranjang.filter(item => item.id !== id);
                 }
@@ -245,7 +231,6 @@
             }
         }
     
-        // 5. Fungsi ajaib untuk menggambar ulang isi keranjang ke HTML
         function renderKeranjang() {
             const listKeranjang = document.getElementById('list-keranjang');
             let htmlContent = '';
@@ -260,14 +245,12 @@
                 listKeranjang.innerHTML = `<div class="text-center text-gray-400 mt-10 text-sm">Belum ada produk dipilih.</div>`;
                 updateTotal(0);
                 
-                // Update Badge Mobile Utama jadi 0 dan sembunyikan
                 const cartBadge = document.getElementById('mobile-cart-badge');
                 if(cartBadge) cartBadge.classList.add('hidden');
                 
                 return;
             }
     
-            // Looping isi keranjang untuk membuat HTML-nya
             keranjang.forEach(item => {
                 subtotal += (item.harga * item.qty);
                 
@@ -290,16 +273,12 @@
 
                 let badgeProduk = document.getElementById(`badge-produk-${item.id}`);
                 if (badgeProduk) {
-                    badgeProduk.innerText = item.qty; // Tulis angka qty
-                    badgeProduk.classList.remove('hidden'); // Munculkan badge-nya
+                    badgeProduk.innerText = item.qty; 
+                    badgeProduk.classList.remove('hidden'); 
                 }
-
             });
     
-            // Tampilkan HTML ke layar
             listKeranjang.innerHTML = htmlContent;
-            
-            // Hitung dan tampilkan total
             updateTotal(subtotal);
 
             const cartBadge = document.getElementById('mobile-cart-badge');
@@ -313,51 +292,46 @@
             }
         }
     
-        // 6. Fungsi untuk menghitung Pajak dan Total
         function updateTotal(subtotal) {
-            let total = subtotal; // Total murni dari harga barang
+            let total = subtotal; 
             
             document.getElementById('text-total').innerText = formatRupiah(total);
             document.getElementById('btn-text-total').innerText = formatRupiah(total);
         }
 
-        // Fungsi untuk mengirim data ke server
-        // Fungsi untuk mengirim data ke server
+        // Fungsi utama untuk memproses pembayaran
         async function prosesBayar() {
             if (keranjang.length === 0) {
                 Swal.fire({
                     title: 'Keranjang Kosong!',
                     text: 'Silakan pilih produk terlebih dahulu.',
                     icon: 'warning',
-                    confirmButtonColor: '#be185d',
+                    confirmButtonColor: '#2EC4B6',
                     confirmButtonText: 'Oke'
                 });
                 return;
             }
 
-            // --- LOGIKA MUNCULKAN QRIS ---
+            // Memunculkan QRIS jika metode yang dipilih adalah QRIS
             if (metodePembayaran === 'qris') {
-                // Tampilkan popup gambar QRIS
                 const resultQris = await Swal.fire({
                     title: 'Scan QRIS',
                     html: `
                         <p class="text-sm text-gray-500 mb-4">Minta pelanggan scan kode di bawah ini.</p>
-                        <img src="{{ asset('storage/images/qris_aktif.png') }}" alt="QRIS Toko"> class="w-64 h-64 mx-auto object-cover rounded-xl border-2 border-gray-100 shadow-sm">
+                        <img src="{{ asset('storage/images/qris.png') }}?v={{ time() }}" alt="QRIS Toko" class="w-64 h-64 mx-auto object-cover rounded-xl border-2 border-gray-100 shadow-sm">
                         <p class="font-bold text-xl mt-4 text-primary">${document.getElementById('text-total').innerText}</p>
                     `,
                     showCancelButton: true,
-                    confirmButtonColor: '#be185d',
+                    confirmButtonColor: '#2EC4B6',
                     cancelButtonColor: '#9ca3af',
                     confirmButtonText: 'Sudah Dibayar',
                     cancelButtonText: 'Batal'
                 });
 
-                // Jika kasir menekan "Batal", hentikan proses bayar
                 if (!resultQris.isConfirmed) {
                     return;
                 }
             }
-            // -----------------------------
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -377,7 +351,6 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken 
                     },
-                    // Kita juga kirim data metode_pembayaran ke controller Laravel
                     body: JSON.stringify({ 
                         keranjang: keranjang,
                         metode_pembayaran: metodePembayaran 
@@ -392,8 +365,8 @@
                         html: `Pembayaran sukses diproses.<br><br><b>Nomor Nota:</b> ${result.nota}<br><b>Metode:</b> ${metodePembayaran.toUpperCase()}`,
                         icon: 'success',
                         background: '#fff1f2', 
-                        color: '#be185d', 
-                        confirmButtonColor: '#be185d',
+                        color: '#2EC4B6', 
+                        confirmButtonColor: '#2EC4B6',
                         confirmButtonText: 'Selesai'
                     });
                     
@@ -403,7 +376,6 @@
                     }
                     renderKeranjang(); 
                     
-                    // Kembalikan tombol ke Tunai untuk transaksi berikutnya
                     pilihMetode('tunai');
 
                 } else {
@@ -411,7 +383,7 @@
                         title: 'Oops! Gagal',
                         text: result.message,
                         icon: 'error',
-                        confirmButtonColor: '#be185d'
+                        confirmButtonColor: '#2EC4B6'
                     });
                 }
 
@@ -421,85 +393,20 @@
                     title: 'Terjadi Kesalahan',
                     text: 'Gangguan jaringan saat menghubungi server.',
                     icon: 'error',
-                    confirmButtonColor: '#be185d'
+                    confirmButtonColor: '#2EC4B6'
                 });
             }
         }
+        // Akhir dari fungsi prosesBayar()
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        try {
-            // Tampilkan efek loading (opsional tapi keren)
-            Swal.fire({
-                title: 'Memproses Pembayaran...',
-                text: 'Mohon tunggu sebentar',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            const response = await fetch('/checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken 
-                },
-                body: JSON.stringify({ keranjang: keranjang }) 
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Notifikasi Sukses yang Cantik!
-                Swal.fire({
-                    title: 'Yeay, Berhasil! 🎉',
-                    html: `Pembayaran sukses diproses.<br><br><b>Nomor Nota:</b> ${result.nota}`,
-                    icon: 'success',
-                    background: '#fff1f2', // Background pink sangat muda
-                    color: '#be185d', // Teks warna pink tua
-                    confirmButtonColor: '#be185d',
-                    confirmButtonText: 'Selesai'
-                });
-                
-                // Kosongkan keranjang
-                keranjang = []; 
-                if (typeof isKeranjangBuka !== 'undefined') {
-                    isKeranjangBuka = false; // Tutup list di mobile
-                }
-                renderKeranjang(); 
-
-            } else {
-                // Notifikasi Gagal
-                Swal.fire({
-                    title: 'Oops! Gagal',
-                    text: result.message,
-                    icon: 'error',
-                    confirmButtonColor: '#be185d'
-                });
-            }
-
-        } catch (error) {
-            console.error(error);
-            Swal.fire({
-                title: 'Terjadi Kesalahan',
-                text: 'Gangguan jaringan saat menghubungi server.',
-                icon: 'error',
-                confirmButtonColor: '#be185d'
-            });
-        }
     
-        // Fungsi untuk memfilter produk berdasarkan kategori
         function filterKategori(kategoriId) {
-            // 1. Mengatur warna tombol kategori
             const allBtns = document.querySelectorAll('.kategori-btn');
             
-            // Ubah semua tombol kembali ke warna putih (tidak aktif)
             allBtns.forEach(btn => {
                 btn.className = "kategori-btn bg-white text-gray-500 hover:text-primary border border-gray-200 px-5 py-2 rounded-full text-sm font-medium shrink-0 transition-colors duration-200";
             });
 
-            // Beri warna pink (aktif) pada tombol yang sedang diklik
             let activeBtn;
             if (kategoriId === 'all') {
                 activeBtn = document.getElementById('btn-kategori-all');
@@ -511,53 +418,37 @@
                 activeBtn.className = "kategori-btn bg-primary text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shrink-0 transition-colors duration-200";
             }
 
-            // 2. Memfilter (Menyembunyikan/Menampilkan) Produk
             const allProducts = document.querySelectorAll('.product-card');
             
             allProducts.forEach(card => {
-                // Ambil ID kategori dari atribut data-kategori yang kita buat tadi
                 const cardKategori = card.getAttribute('data-kategori');
                 
-                // Jika pilih 'Semua' ATAU ID kategorinya cocok, tampilkan produknya
                 if (kategoriId === 'all' || cardKategori == kategoriId) {
                     card.style.display = 'block'; 
                 } else {
-                    // Jika tidak cocok, sembunyikan
                     card.style.display = 'none'; 
                 }
             });
         }
 
-        // Fungsi untuk mencari produk berdasarkan nama (Real-time)
         function cariProduk() {
-            // 1. Ambil kata kunci pencarian dan ubah ke huruf kecil
             const keyword = document.getElementById('input-pencarian').value.toLowerCase();
-            
-            // 2. Ambil semua elemen kartu produk
             const allProducts = document.querySelectorAll('.product-card');
 
-            // 3. Lakukan perulangan untuk mengecek setiap produk
             allProducts.forEach(card => {
-                // Ambil teks nama produk yang ada di dalam tag <h3> pada kartu tersebut
                 const namaProduk = card.querySelector('h3').innerText.toLowerCase();
 
-                // 4. Cek apakah nama produk mengandung kata kunci pencarian
                 if (namaProduk.includes(keyword)) {
-                    card.style.display = 'block'; // Tampilkan jika cocok
+                    card.style.display = 'block'; 
                 } else {
-                    card.style.display = 'none';  // Sembunyikan jika tidak cocok
+                    card.style.display = 'none';  
                 }
             });
         }
 
-        // Fungsi untuk menampilkan tanggal hari ini secara real-time
         function updateTanggal() {
             const elemenTanggal = document.getElementById('tanggal-hari-ini');
-            
-            // Mengambil waktu saat ini
             const hariIni = new Date();
-            
-            // Pengaturan format tanggal (Nama Hari, Tanggal Bulan Tahun)
             const opsiFormat = { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -565,16 +456,13 @@
                 day: 'numeric' 
             };
             
-            // Mengubah ke format bahasa Indonesia ('id-ID')
             const tanggalDiformat = hariIni.toLocaleDateString('id-ID', opsiFormat);
             
-            // Menampilkan ke layar
             if (elemenTanggal) {
                 elemenTanggal.innerText = tanggalDiformat;
             }
         }
 
-        // Panggil fungsi ini tepat setelah halaman selesai dimuat
         document.addEventListener('DOMContentLoaded', () => {
             updateTanggal();
         });

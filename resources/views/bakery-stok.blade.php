@@ -224,7 +224,7 @@
                 icon: 'success',
                 title: 'Berhasil!',
                 text: '{{ session('success') }}',
-                confirmButtonColor: '#be185d'
+                confirmButtonColor: '#2EC4B6'
             });
         @endif
 
@@ -234,7 +234,7 @@
                 icon: 'error',
                 title: 'Gagal Menyimpan!',
                 html: '<ul class="text-left text-sm text-red-500">@foreach($errors->all() as $error)<li>- {{ $error }}</li>@endforeach</ul>',
-                confirmButtonColor: '#be185d'
+                confirmButtonColor: '#2EC4B6'
             });
         @endif
 
@@ -342,7 +342,7 @@
                         icon: 'error',
                         title: 'Ukuran Terlalu Besar!',
                         text: 'Maksimal ukuran foto adalah 2MB.',
-                        confirmButtonColor: '#be185d'
+                        confirmButtonColor: '#2EC4B6'
                     });
                     
                     // Reset input agar file batal dipilih

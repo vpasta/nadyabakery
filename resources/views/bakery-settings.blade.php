@@ -97,15 +97,70 @@
                         <div class="relative w-full aspect-square max-w-[250px] border-2 border-gray-300 border-dashed rounded-2xl bg-gray-50 overflow-hidden group mb-4">
                             <input type="file" name="qris_image" id="input-qris" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" onchange="previewQris(event)">
                             
-                            <img id="preview-qris" src="{{ asset('storage/images/qris.png') }}" class="absolute inset-0 w-full h-full object-cover z-10 {{ file_exists(public_path('storage/images/qris.png')) ? '' : 'hidden' }}">
+                            <img id="preview-qris" src="{{ asset('storage/images/qris.png') }}?v={{ time() }}" class="absolute inset-0 w-full h-full object-cover z-10 {{ file_exists(storage_path('app/public/images/qris.png')) ? '' : 'hidden' }}">
 
-                            <div id="teks-qris" class="flex flex-col items-center justify-center h-full z-0 {{ file_exists(public_path('storage/images/qris.png')) ? 'hidden' : '' }}">
+                            <div id="teks-qris" class="flex flex-col items-center justify-center h-full z-0 {{ file_exists(storage_path('app/public/images/qris.png')) ? 'hidden' : '' }}">
                                 <i class="ph ph-upload-simple text-4xl text-gray-400 mb-2"></i>
                                 <span class="text-sm font-semibold text-gray-500 text-center px-4">Klik untuk ganti QRIS</span>
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-secondary text-white py-3 rounded-xl font-bold hover:opacity-90 transition">Update Gambar QRIS</button>
                     </form>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center text-primary">
+                            <i class="ph ph-tag text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-800">Manajemen Kategori</h2>
+                            <p class="text-sm text-gray-500">Kelola kategori produk roti Anda</p>
+                        </div>
+                    </div>
+                    </div>
+            
+                <form action="{{ route('kategori.store') }}" method="POST" class="flex gap-3 mb-6">
+                    @csrf
+                    <input type="text" name="nama_kategori" placeholder="Nama kategori baru..." class="flex-1 px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-primary-soft" required>
+                    <button type="submit" class="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:opacity-90 transition">Tambah</button>
+                </form>
+            
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-gray-400 text-sm border-b border-gray-50">
+                                <th class="pb-3 font-medium">Nama Kategori</th>
+                                <th class="pb-3 font-medium text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @foreach($kategori as $k)
+                            <tr>
+                                <td class="py-4 text-gray-700 font-medium">{{ $k->nama_kategori }}</td>
+                                <td class="py-4 text-right flex justify-end space-x-2">
+                                    <button onclick="editKategori({{ $k->id }}, '{{ $k->nama_kategori }}')" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition">
+                                        <i class="ph ph-pencil-simple text-xl"></i>
+                                    </button>
+                                    
+                                    <button onclick="konfirmasiHapus({{ $k->id }})"
+                                        class="p-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                                        <i class="ph ph-trash text-lg"></i>
+                                    </button>
+                                    
+                                    <form id="form-hapus-{{ $k->id }}"
+                                        action="{{ route('kategori.destroy', $k->id) }}"
+                                        method="POST"
+                                        class="hidden">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -126,12 +181,58 @@
             }
         }
 
+        function editKategori(id, namaLama) {
+        Swal.fire({
+            title: 'Edit Kategori',
+            input: 'text',
+            inputValue: namaLama,
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            confirmButtonColor: '#2EC4B6',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) return 'Nama kategori tidak boleh kosong!'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Buat form dinamis untuk submit PUT
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/pengaturan/kategori/${id}`;
+                form.innerHTML = `
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="nama_kategori" value="${result.value}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+        }
+
+        function konfirmasiHapus(id) {
+        Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: "Data kategori yang dihapus tidak bisa dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#9ca3af',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(`form-hapus-${id}`).submit();
+            }
+        })
+}
+
         @if(session('success'))
-            Swal.fire({ icon: 'success', title: 'Berhasil!', text: "{{ session('success') }}", confirmButtonColor: '#be185d' });
+            Swal.fire({ icon: 'success', title: 'Berhasil!', text: "{{ session('success') }}", confirmButtonColor: '#2EC4B6' });
         @endif
 
         @if($errors->any())
-            Swal.fire({ icon: 'error', title: 'Gagal!', text: "{{ $errors->first() }}", confirmButtonColor: '#be185d' });
+            Swal.fire({ icon: 'error', title: 'Gagal!', text: "{{ $errors->first() }}", confirmButtonColor: '#2EC4B6' });
         @endif
     </script>
 </body>

@@ -13,6 +13,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50 text-dark h-screen w-full flex overflow-hidden">
@@ -107,17 +108,28 @@
                                     {{ \Carbon\Carbon::parse($trx->created_at)->format('d M Y, H:i') }}
                                 </td>
                                 <td class="py-4 px-4 md:px-6">
-                                    <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
-                                        {{ $trx->metode_pembayaran }}
-                                    </span>
+                                    @if(strtolower($trx->metode_pembayaran) == 'qris')
+                                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+                                            <i class="ph ph-qr-code mr-1"></i> QRIS
+                                        </span>
+                                    @else
+                                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                                            <i class="ph ph-money mr-1"></i> Tunai
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="py-4 px-4 md:px-6 font-bold text-primary text-right">
                                     Rp {{ number_format($trx->total_bayar, 0, ',', '.') }}
                                 </td>
-                                <td class="py-4 px-4 md:px-6 text-center">
+                                <td class="py-4 px-4 md:px-6 text-center flex justify-center gap-2">
                                     <button onclick="document.getElementById('modal-trx-{{ $trx->id }}').classList.remove('hidden')" 
-                                            class="text-gray-400 hover:text-secondary transition px-2 py-1 rounded bg-white hover:bg-primary-soft shadow-sm border border-gray-100">
+                                            class="text-gray-400 hover:text-primary transition p-2 rounded bg-white shadow-sm border border-gray-100">
                                         <i class="ph ph-eye text-lg"></i>
+                                    </button>
+                                    
+                                    <button onclick="konfirmasiHapus({{ $trx->id }}, '{{ $trx->nomor_nota }}')" 
+                                            class="text-red-400 hover:text-red-600 transition p-2 rounded bg-white shadow-sm border border-gray-100">
+                                        <i class="ph ph-trash text-lg"></i>
                                     </button>
                                 </td>
                                 
@@ -194,6 +206,37 @@
             }
         }
 
+        function konfirmasiHapus(id, nota) {
+        Swal.fire({
+            title: 'Hapus Transaksi?',
+            text: `Nota: ${nota}. Apakah stok produk ingin dikembalikan?`,
+            icon: 'warning',
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonColor: '#2EC4B6', // Tombol Pink
+            denyButtonColor: '#9ca3af',    // Tombol Abu-abu
+            confirmButtonText: 'Ya, Kembalikan Stok',
+            denyButtonText: 'Tidak, Hapus Saja',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed || result.isDenied) {
+                const kembalikan = result.isConfirmed ? 'true' : 'false';
+                
+                // Submit form secara dinamis
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/riwayat/${id}`;
+                form.innerHTML = `
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="restore_stock" value="${kembalikan}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then((registration) => {
@@ -203,6 +246,10 @@
                 });
             });
         }
+
+        @if(session('success'))
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: "{{ session('success') }}", confirmButtonColor: '#be185d' });
+    @endif
     </script>
 </body>
 </html>
