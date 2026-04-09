@@ -109,7 +109,7 @@
                                 <span class="text-sm font-semibold text-gray-500 text-center px-4">Klik untuk ganti QRIS</span>
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-secondary text-white py-3 rounded-xl font-bold hover:opacity-90 transition">Update Gambar QRIS</button>
+                        <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-secondary transition">Update Gambar QRIS</button>
                     </form>
                 </div>
             </div>
