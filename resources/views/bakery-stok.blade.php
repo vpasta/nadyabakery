@@ -315,16 +315,6 @@
                 }
             })
         }
-        
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then((registration) => {
-                    console.log('PWA Service Worker berhasil didaftarkan!', registration.scope);
-                }).catch((error) => {
-                    console.log('PWA Service Worker gagal didaftarkan:', error);
-                });
-            });
-        }
 
         // Fungsi untuk menampilkan preview gambar dan validasi ukuran
         function previewImage(event) {
@@ -368,6 +358,16 @@
                 preview.classList.add('hidden');
                 teks.classList.remove('hidden');
             }
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then((registration) => {
+                    console.log('PWA Service Worker berhasil didaftarkan!', registration.scope);
+                }).catch((error) => {
+                    console.log('PWA Service Worker gagal didaftarkan:', error);
+                });
+            });
         }
     </script>
 </body>

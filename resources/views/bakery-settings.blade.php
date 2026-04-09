@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengaturan - Nadya Bakery</title>
+
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#F58E8B">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -234,6 +239,16 @@
         @if($errors->any())
             Swal.fire({ icon: 'error', title: 'Gagal!', text: "{{ $errors->first() }}", confirmButtonColor: '#2EC4B6' });
         @endif
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then((registration) => {
+                    console.log('PWA Service Worker berhasil didaftarkan!', registration.scope);
+                }).catch((error) => {
+                    console.log('PWA Service Worker gagal didaftarkan:', error);
+                });
+            });
+        }
     </script>
 </body>
 </html>
