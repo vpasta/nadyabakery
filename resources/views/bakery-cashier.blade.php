@@ -118,7 +118,9 @@
 
         <div id="cart-panel" class="fixed md:static top-0 right-0 h-full w-[90vw] md:w-96 shrink-0 bg-white border-l border-gray-200 flex flex-col shadow-2xl z-50 transform translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="h-20 border-b border-gray-100 flex items-center justify-between px-6">
-                <h2 class="text-lg font-bold text-gray-800">Pesanan Baru</h2>
+                <div class="flex items-center space-x-3">
+                    <h2 class="text-lg font-bold text-gray-800">Pesanan Baru</h2>
+                </div>
                 
                 <div class="flex items-center space-x-3">
                     <div class="flex items-center space-x-3">
@@ -138,6 +140,10 @@
             
             <div class="bg-gray-50 p-6 border-t border-gray-200 shrink-0">
                 <div class="space-y-2 mb-4">
+                    <button id="btn-kosongkan-keranjang" onclick="hapusKeranjang()" class="hidden w-full mb-4 py-2 border border-red-200 text-red-500 bg-white hover:bg-red-50 rounded-lg text-sm font-bold items-center justify-center transition shadow-sm">
+                        <i class="ph ph-trash text-lg mr-2"></i>
+                        Kosongkan Keranjang
+                    </button>
                     <div class="flex justify-between text-lg font-bold text-gray-800 mt-2">
                         <span>Total Pembayaran</span>
                         <span id="text-total">Rp 0</span>
@@ -233,6 +239,7 @@
     
         function renderKeranjang() {
             const listKeranjang = document.getElementById('list-keranjang');
+            const btnKosongkan = document.getElementById('btn-kosongkan-keranjang'); // Ambil elemen tombol
             let htmlContent = '';
             let subtotal = 0;
             
@@ -241,6 +248,7 @@
                 badge.innerText = '0';
             });
 
+            // JIKA KERANJANG KOSONG
             if (keranjang.length === 0) {
                 listKeranjang.innerHTML = `<div class="text-center text-gray-400 mt-10 text-sm">Belum ada produk dipilih.</div>`;
                 updateTotal(0);
@@ -248,9 +256,16 @@
                 const cartBadge = document.getElementById('mobile-cart-badge');
                 if(cartBadge) cartBadge.classList.add('hidden');
                 
+                // Sembunyikan tombol kosongkan keranjang
+                if(btnKosongkan) btnKosongkan.classList.add('hidden'); 
+                
                 return;
             }
-    
+
+            // JIKA KERANJANG ADA ISINYA
+            // Tampilkan tombol kosongkan keranjang
+            if(btnKosongkan) btnKosongkan.classList.remove('hidden'); 
+
             keranjang.forEach(item => {
                 subtotal += (item.harga * item.qty);
                 
@@ -277,7 +292,7 @@
                     badgeProduk.classList.remove('hidden'); 
                 }
             });
-    
+
             listKeranjang.innerHTML = htmlContent;
             updateTotal(subtotal);
 
@@ -521,7 +536,50 @@
 
             printWindow.document.write(htmlNota);
             printWindow.document.close();
-        }       
+        }
+        
+        // Fungsi untuk mengosongkan seluruh isi keranjang
+        function hapusKeranjang() {
+            // Jika keranjang sudah kosong, tidak perlu melakukan apa-apa
+            if (keranjang.length === 0) {
+                Swal.fire({
+                    title: 'Keranjang Kosong',
+                    text: 'Belum ada produk di dalam keranjang.',
+                    icon: 'info',
+                    confirmButtonColor: '#2EC4B6'
+                });
+                return;
+            }
+
+            // Tampilkan pop-up konfirmasi
+            Swal.fire({
+                title: 'Kosongkan Keranjang?',
+                text: "Semua produk yang telah dipilih akan dihapus.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444', // Warna merah untuk tombol hapus
+                cancelButtonColor: '#9ca3af', // Warna abu-abu untuk tombol batal
+                confirmButtonText: 'Ya, Kosongkan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Kosongkan array keranjang
+                    keranjang = [];
+                    
+                    // Render ulang tampilan keranjang dan angka di badge
+                    renderKeranjang();
+                    
+                    // Notifikasi sukses (opsional, akan hilang sendiri dalam 1.5 detik)
+                    Swal.fire({
+                        title: 'Berhasil',
+                        text: 'Keranjang telah dikosongkan.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
