@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
 
     // Route untuk Riwayat Transaksi
     Route::get('/riwayat', [TransaksiController::class, 'riwayat']);
+    Route::delete('/riwayat/bulk-delete', [TransaksiController::class, 'destroyBulk'])->name('transaksi.destroyBulk');
+    Route::delete('/riwayat/delete-all', [TransaksiController::class, 'destroyAll'])->name('transaksi.destroyAll');
     Route::delete('/riwayat/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
 
     // Halaman & CRUD Stok Produk

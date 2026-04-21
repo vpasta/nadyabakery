@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
 use App\Models\DetailTransaksi;
-use App\Models\Produk; // Tambahkan ini
+use App\Models\Produk;
 use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
@@ -13,7 +13,7 @@ class TransaksiController extends Controller
     public function prosesCheckout(Request $request)
     {
         $keranjang = $request->keranjang;
-        $metode = $request->metode_pembayaran ?? 'Tunai'; // Ambil metode dari JS
+        $metode = $request->metode_pembayaran ?? 'Tunai';
 
         if (empty($keranjang)) {
             return response()->json(['success' => false, 'message' => 'Keranjang masih kosong.']);
@@ -25,15 +25,16 @@ class TransaksiController extends Controller
             foreach ($keranjang as $item) {
                 $subtotal += $item['harga'] * $item['qty'];
             }
-            $pajak = $subtotal * 0.10; 
-            $total_bayar = $subtotal + $pajak;
+            
+            // Pajak dihapus sesuai permintaan sebelumnya
+            $total_bayar = $subtotal;
 
             // 1. Simpan Transaksi Utama
             $transaksiBaru = Transaksi::create([
                 'nomor_nota' => 'NDY-' . time(), 
                 'nama_kasir' => 'Kasir Nadya', 
                 'total_harga' => $subtotal,
-                'pajak' => $pajak,
+                'pajak' => 0,
                 'total_bayar' => $total_bayar,
                 'metode_pembayaran' => ucfirst($metode) 
             ]);
@@ -69,14 +70,12 @@ class TransaksiController extends Controller
         }
     }
 
-    // Fungsi baru untuk Hapus Riwayat
+    // Fungsi Hapus 1 Riwayat
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         try {
             $transaksi = Transaksi::with('detailTransaksi')->findOrFail($id);
-
-            // Jika user memilih kembalikan stok
             if ($request->restore_stock == 'true') {
                 foreach ($transaksi->detailTransaksi as $detail) {
                     $produk = Produk::find($detail->produk_id);
@@ -86,7 +85,6 @@ class TransaksiController extends Controller
                     }
                 }
             }
-
             $transaksi->detailTransaksi()->delete();
             $transaksi->delete();
 
@@ -98,11 +96,74 @@ class TransaksiController extends Controller
         }
     }
 
+    // Fungsi Hapus Banyak (Terpilih)
+    public function destroyBulk(Request $request)
+    {
+        $ids = explode(',', $request->ids);
+        $restore = $request->restore_stock == 'true';
+
+        DB::beginTransaction();
+        try {
+            $transaksis = Transaksi::with('detailTransaksi')->whereIn('id', $ids)->get();
+            foreach ($transaksis as $transaksi) {
+                if ($restore) {
+                    foreach ($transaksi->detailTransaksi as $detail) {
+                        $produk = Produk::find($detail->produk_id);
+                        if ($produk) {
+                            $produk->stok += $detail->jumlah_beli;
+                            $produk->save();
+                        }
+                    }
+                }
+                $transaksi->detailTransaksi()->delete();
+                $transaksi->delete();
+            }
+            DB::commit();
+            return back()->with('success', count($ids) . ' Riwayat transaksi berhasil dihapus!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Gagal menghapus terpilih: ' . $e->getMessage());
+        }
+    }
+
+    // Fungsi Hapus Semua Riwayat
+    public function destroyAll(Request $request)
+    {
+        $restore = $request->restore_stock == 'true';
+
+        DB::beginTransaction();
+        try {
+            if ($restore) {
+                $transaksis = Transaksi::with('detailTransaksi')->get();
+                foreach ($transaksis as $transaksi) {
+                    foreach ($transaksi->detailTransaksi as $detail) {
+                        $produk = Produk::find($detail->produk_id);
+                        if ($produk) {
+                            $produk->stok += $detail->jumlah_beli;
+                            $produk->save();
+                        }
+                    }
+                }
+            }
+            
+            // Hapus semua data
+            DetailTransaksi::query()->delete();
+            Transaksi::query()->delete();
+
+            DB::commit();
+            return back()->with('success', 'Semua riwayat transaksi berhasil dihapus!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Gagal menghapus semua: ' . $e->getMessage());
+        }
+    }
+
+    // Fungsi Menampilkan Halaman Riwayat (Dibatasi 10 Per Halaman)
     public function riwayat()
     {
         $transaksis = Transaksi::with(['detailTransaksi.produk'])
                                ->orderBy('created_at', 'desc')
-                               ->get();
+                               ->paginate(10); // <-- Di sini letak pembatasan 10 tabel
         return view('bakery-history', compact('transaksis'));
     }
 }

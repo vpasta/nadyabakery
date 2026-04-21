@@ -385,14 +385,11 @@
                     confirmButtonColor: '#be185d',
                 }).then((swalResult) => {
                     if (swalResult.isConfirmed) {
-                        // Panggil fungsi cetak dengan data yang ada di keranjang
                         cetakNota({
-                            nota: result.nota,
-                            kasir: 'Kasir Nadya',
-                            items: keranjang,
-                            total: keranjang.reduce((acc, item) => acc + (item.harga * item.qty), 0),
-                            pajak: keranjang.reduce((acc, item) => acc + (item.harga * item.qty), 0) * 0.1,
-                            grandTotal: keranjang.reduce((acc, item) => acc + (item.harga * item.qty), 0) * 1.1
+                        nota: result.nota,
+                        kasir: 'Kasir Nadya',
+                        items: keranjang,
+                        total: keranjang.reduce((acc, item) => acc + (item.harga * item.qty), 0)
                         });
                     }
                     keranjang = [];
@@ -482,8 +479,8 @@
         setInterval(updateJam, 1000);
 
         function cetakNota(data) {
-            const printWindow = window.open('', '_blank', 'width=300,height=600');
-    
+            const printWindow = window.open('', '_blank', 'width=350,height=600');
+
             // Template HTML untuk nota thermal
             const htmlNota = `
                 <html>
@@ -491,16 +488,17 @@
                 <title>Cetak Nota - ${data.nota}</title>
                 <style>
                 @page { size: 58mm auto; margin: 0; }
-                body { font-family: 'Courier New', Courier, monospace; width: 58mm; padding: 5px; font-size: 12px; }
+                /* Lebar diperkecil ke 50mm dan ditambahkan margin auto agar berada di tengah */
+                body { font-family: 'Courier New', Courier, monospace; width: 50mm; margin: 0 auto; padding: 5px 0; font-size: 11px; }
                 .text-center { text-align: center; }
                 .line { border-bottom: 1px dashed #000; margin: 5px 0; }
                 table { width: 100%; border-collapse: collapse; }
                 .text-right { text-align: right; }
                 </style>
                 </head>
-                <body onload="window.print(); window.close();">
+                <body onload="setTimeout(function(){ window.print(); window.close(); }, 500);">
                 <div class="text-center">
-                <strong>NADYA BAKERY</strong><br>
+                <strong style="font-size: 13px;">NADYA BAKERY AND CAKE</strong><br>
                 Jl. Contoh No. 123, Jakarta<br>
                 Telp: 0812-3456-7890
                 </div>
@@ -517,16 +515,17 @@
                         <td colspan="2">${item.nama}</td>
                     </tr>
                     <tr>
-                        <td>${item.qty} x ${item.harga.toLocaleString()}</td>
-                        <td class="text-right">${(item.qty * item.harga).toLocaleString()}</td>
+                        <td>${item.qty} x ${item.harga.toLocaleString('id-ID')}</td>
+                        <td class="text-right">${(item.qty * item.harga).toLocaleString('id-ID')}</td>
                     </tr>
                 `).join('')}
                 </table>
                 <div class="line"></div>
                 <table>
-                <tr><td>Total</td><td class="text-right">${data.total.toLocaleString()}</td></tr>
-                <tr><td>Pajak (10%)</td><td class="text-right">${data.pajak.toLocaleString()}</td></tr>
-                <tr style="font-weight:bold;"><td>GRAND TOTAL</td><td class="text-right">${data.grandTotal.toLocaleString()}</td></tr>
+                <tr style="font-weight:bold; font-size: 13px;">
+                    <td>TOTAL</td>
+                    <td class="text-right">Rp ${data.total.toLocaleString('id-ID')}</td>
+                </tr>
                 </table>
                 <div class="line"></div>
                 <div class="text-center">Terima Kasih Atas Kunjungan Anda!</div>

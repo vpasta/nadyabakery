@@ -73,18 +73,33 @@
             <div class="bg-pink-50 text-primary px-3 md:px-4 py-2 rounded-xl font-bold text-xs md:text-sm border border-primary-soft">
                 <span class="hidden md:inline">Total Transaksi: </span>
                 <span class="md:hidden">Total: </span>
-                {{ $transaksis->count() }}
+                {{ $transaksis->total() }} {{-- Gunakan total() karena sekarang memakai paginasi --}}
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
+            
+            {{-- Tombol Aksi Massal --}}
+            <div class="mb-4 flex flex-wrap gap-2 justify-end">
+                <button id="btn-hapus-terpilih" onclick="konfirmasiHapusBulk()" class="hidden bg-orange-100 text-orange-600 hover:bg-orange-200 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                    <i class="ph ph-trash"></i> Hapus Terpilih
+                </button>
+                @if($transaksis->count() > 0)
+                <button onclick="konfirmasiHapusSemua()" class="bg-red-100 text-red-600 hover:bg-red-200 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                    <i class="ph ph-warning"></i> Kosongkan Semua Riwayat
+                </button>
+                @endif
+            </div>
+
             <div class="bg-white rounded-2xl shadow-sm border border-primary-soft overflow-hidden">
-                
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-150">
                         <thead>
                             <tr class="bg-bg text-primary border-b border-primary-soft">
-                                <th class="py-4 px-4 md:px-6 font-semibold text-sm">No. Nota</th>
+                                <th class="py-4 px-4 w-10 text-center">
+                                    <input type="checkbox" id="check-all" onclick="toggleSemuaCheckbox(this)" class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                </th>
+                                <th class="py-4 px-2 md:px-6 font-semibold text-sm">No. Nota</th>
                                 <th class="py-4 px-4 md:px-6 font-semibold text-sm">Tanggal & Waktu</th>
                                 <th class="py-4 px-4 md:px-6 font-semibold text-sm">Metode</th>
                                 <th class="py-4 px-4 md:px-6 font-semibold text-sm text-right">Total Belanja</th>
@@ -95,13 +110,16 @@
                         
                         @if($transaksis->isEmpty())
                             <tr>
-                                <td colspan="5" class="py-8 text-center text-gray-400">Belum ada transaksi saat ini.</td>
+                                <td colspan="6" class="py-8 text-center text-gray-400">Belum ada transaksi saat ini.</td>
                             </tr>
                         @endif
 
                         @foreach($transaksis as $trx)
                             <tr class="hover:bg-pink-50/50 transition duration-150 group">
-                                <td class="py-4 px-4 md:px-6 font-bold text-gray-700">
+                                <td class="py-4 px-4 text-center">
+                                    <input type="checkbox" class="checkbox-riwayat w-4 h-4 text-primary rounded focus:ring-primary" value="{{ $trx->id }}" onchange="periksaCheckbox()">
+                                </td>
+                                <td class="py-4 px-2 md:px-6 font-bold text-gray-700">
                                     {{ $trx->nomor_nota }}
                                 </td>
                                 <td class="py-4 px-4 md:px-6 text-sm text-gray-500">
@@ -122,12 +140,34 @@
                                     Rp {{ number_format($trx->total_bayar, 0, ',', '.') }}
                                 </td>
                                 <td class="py-4 px-4 md:px-6 text-center flex justify-center gap-2">
-                                    <button onclick="document.getElementById('modal-trx-{{ $trx->id }}').classList.remove('hidden')" 
+                                    
+                                    {{-- Data yang dikirim ke JS untuk cetak ulang nota --}}
+                                    @php
+                                        $printData = [
+                                            'nota' => $trx->nomor_nota,
+                                            'kasir' => $trx->nama_kasir,
+                                            'total' => $trx->total_bayar,
+                                            'items' => $trx->detailTransaksi->map(function($dt) {
+                                                return [
+                                                    'nama' => $dt->produk->nama_produk ?? 'Produk Terhapus',
+                                                    'qty' => $dt->jumlah_beli,
+                                                    'harga' => $dt->harga_satuan,
+                                                ];
+                                            })
+                                        ];
+                                    @endphp
+
+                                    <button onclick="cetakNotaRiwayat({{ json_encode($printData) }})" title="Cetak Ulang Nota"
+                                            class="text-blue-400 hover:text-blue-600 transition p-2 rounded bg-white shadow-sm border border-gray-100">
+                                        <i class="ph ph-printer text-lg"></i>
+                                    </button>
+
+                                    <button onclick="document.getElementById('modal-trx-{{ $trx->id }}').classList.remove('hidden')" title="Lihat Detail"
                                             class="text-gray-400 hover:text-primary transition p-2 rounded bg-white shadow-sm border border-gray-100">
                                         <i class="ph ph-eye text-lg"></i>
                                     </button>
                                     
-                                    <button onclick="konfirmasiHapus({{ $trx->id }}, '{{ $trx->nomor_nota }}')" 
+                                    <button onclick="konfirmasiHapus({{ $trx->id }}, '{{ $trx->nomor_nota }}')" title="Hapus Riwayat"
                                             class="text-red-400 hover:text-red-600 transition p-2 rounded bg-white shadow-sm border border-gray-100">
                                         <i class="ph ph-trash text-lg"></i>
                                     </button>
@@ -152,19 +192,15 @@
                                 
                                         <div class="p-6 overflow-y-auto flex-1">
                                             <div class="space-y-4">
-                                                {{-- Looping melalui relasi detailTransaksi yang sudah kita buat di Model --}}
                                                 @forelse($trx->detailTransaksi as $detail)
                                                 <div class="flex justify-between items-center pb-3 border-b border-gray-100 last:border-0 last:pb-0">
                                                     <div>
-                                                        {{-- Ambil nama_produk dari tabel Produk melalui relasi --}}
                                                         <p class="font-semibold text-dark">{{ $detail->produk->nama_produk ?? 'Produk Terhapus' }}</p>
                                                         <p class="text-sm text-gray-500">
-                                                            {{-- Gunakan nama kolom sesuai database: jumlah_beli & harga_satuan --}}
                                                             {{ $detail->jumlah_beli }}x Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}
                                                         </p>
                                                     </div>
                                                     <p class="font-bold text-secondary">
-                                                        {{-- Gunakan nama kolom sesuai database: subtotal --}}
                                                         Rp {{ number_format($detail->subtotal, 0, ',', '.') }}
                                                     </p>
                                                 </div>
@@ -188,17 +224,19 @@
                 </table>           
                 </div>
             </div>
-        </div>
 
+            {{-- Link Navigasi Pagination --}}
+            <div class="mt-4">
+                {{ $transaksis->links() }}
+            </div>
+
+        </div>
     </main>
     <script>
-        // Fungsi untuk membuka dan menutup Sidebar Navigasi di Mobile
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar-menu');
             const overlay = document.getElementById('sidebar-overlay');
-            
             sidebar.classList.toggle('-translate-x-full');
-            
             if (sidebar.classList.contains('-translate-x-full')) {
                 overlay.classList.add('hidden');
             } else {
@@ -206,36 +244,175 @@
             }
         }
 
-        function konfirmasiHapus(id, nota) {
-        Swal.fire({
-            title: 'Hapus Transaksi?',
-            text: `Nota: ${nota}. Apakah stok produk ingin dikembalikan?`,
-            icon: 'warning',
-            showCancelButton: true,
-            showDenyButton: true,
-            confirmButtonColor: '#2EC4B6', // Tombol Pink
-            denyButtonColor: '#9ca3af',    // Tombol Abu-abu
-            confirmButtonText: 'Ya, Kembalikan Stok',
-            denyButtonText: 'Tidak, Hapus Saja',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed || result.isDenied) {
-                const kembalikan = result.isConfirmed ? 'true' : 'false';
-                
-                // Submit form secara dinamis
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/riwayat/${id}`;
-                form.innerHTML = `
-                    @csrf
-                    @method('DELETE')
-                    <input type="hidden" name="restore_stock" value="${kembalikan}">
-                `;
-                document.body.appendChild(form);
-                form.submit();
+        // ================= FITUR CHECKBOX & DELETE BULK =================
+        function toggleSemuaCheckbox(source) {
+            const checkboxes = document.querySelectorAll('.checkbox-riwayat');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            periksaCheckbox();
+        }
+
+        function periksaCheckbox() {
+            const checkboxes = document.querySelectorAll('.checkbox-riwayat:checked');
+            const btnHapusBulk = document.getElementById('btn-hapus-terpilih');
+            if (checkboxes.length > 0) {
+                btnHapusBulk.classList.remove('hidden');
+            } else {
+                btnHapusBulk.classList.add('hidden');
+                document.getElementById('check-all').checked = false;
             }
-        });
-    }
+        }
+
+        function konfirmasiHapusBulk() {
+            const checkboxes = document.querySelectorAll('.checkbox-riwayat:checked');
+            let ids = [];
+            checkboxes.forEach(cb => ids.push(cb.value));
+
+            Swal.fire({
+                title: 'Hapus Terpilih?',
+                text: `Anda memilih ${ids.length} riwayat. Apakah stok produk ingin dikembalikan?`,
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#2EC4B6',
+                denyButtonColor: '#9ca3af',
+                confirmButtonText: 'Ya, Kembalikan Stok',
+                denyButtonText: 'Tidak, Hapus Saja',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed || result.isDenied) {
+                    const kembalikan = result.isConfirmed ? 'true' : 'false';
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/riwayat/bulk-delete`;
+                    form.innerHTML = `
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${ids.join(',')}">
+                        <input type="hidden" name="restore_stock" value="${kembalikan}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function konfirmasiHapusSemua() {
+            Swal.fire({
+                title: 'BAHAYA! Hapus SELURUH Riwayat?',
+                text: `Semua data dari awal sampai akhir akan hilang. Apakah stok produk ingin dikembalikan?`,
+                icon: 'error',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#2EC4B6',
+                denyButtonColor: '#ef4444', 
+                confirmButtonText: 'Ya, Kembalikan Stok',
+                denyButtonText: 'Tidak, Hapus Saja',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed || result.isDenied) {
+                    const kembalikan = result.isConfirmed ? 'true' : 'false';
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/riwayat/delete-all`;
+                    form.innerHTML = `
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="restore_stock" value="${kembalikan}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function konfirmasiHapus(id, nota) {
+            Swal.fire({
+                title: 'Hapus Transaksi?',
+                text: `Nota: ${nota}. Apakah stok produk ingin dikembalikan?`,
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#2EC4B6', 
+                denyButtonColor: '#9ca3af',   
+                confirmButtonText: 'Ya, Kembalikan Stok',
+                denyButtonText: 'Tidak, Hapus Saja',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed || result.isDenied) {
+                    const kembalikan = result.isConfirmed ? 'true' : 'false';
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/riwayat/${id}`;
+                    form.innerHTML = `
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="restore_stock" value="${kembalikan}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // ================= FITUR CETAK NOTA DARI RIWAYAT =================
+        function cetakNotaRiwayat(data) {
+            const printWindow = window.open('', '_blank', 'width=350,height=600');
+
+            const htmlNota = `
+                <html>
+                <head>
+                <title>Cetak Nota - ${data.nota}</title>
+                <style>
+                @page { size: 58mm auto; margin: 0; }
+                body { font-family: 'Courier New', Courier, monospace; width: 50mm; margin: 0 auto; padding: 5px 0; font-size: 11px; color: black;}
+                .text-center { text-align: center; }
+                .line { border-bottom: 1px dashed #000; margin: 5px 0; }
+                table { width: 100%; border-collapse: collapse; }
+                .text-right { text-align: right; }
+                </style>
+                </head>
+                <body onload="setTimeout(function(){ window.print(); window.close(); }, 500);">
+                <div class="text-center">
+                
+                <strong style="font-size: 16px;">NADYA BAKERY</strong><br>
+                Jl. Contoh No. 123, Jakarta<br>
+                Telp: 0812-3456-7890
+                </div>
+                <div class="line"></div>
+                <div>
+                Nota : ${data.nota}<br>
+                Tgl  : ${new Date().toLocaleString('id-ID')}<br>
+                Kasir: ${data.kasir}
+                </div>
+                <div class="line"></div>
+                <table>
+                ${data.items.map(item => `
+                    <tr>
+                        <td colspan="2">${item.nama}</td>
+                    </tr>
+                    <tr>
+                        <td>${item.qty} x ${item.harga.toLocaleString('id-ID')}</td>
+                        <td class="text-right">${(item.qty * item.harga).toLocaleString('id-ID')}</td>
+                    </tr>
+                `).join('')}
+                </table>
+                <div class="line"></div>
+                <table>
+                <tr style="font-weight:bold; font-size: 13px;">
+                    <td>TOTAL</td>
+                    <td class="text-right">Rp ${data.total.toLocaleString('id-ID')}</td>
+                </tr>
+                </table>
+                <div class="line"></div>
+                <div class="text-center">Terima Kasih Atas Kunjungan Anda!</div>
+                <div class="text-center" style="font-size: 9px; margin-top: 5px;">(Salinan Cetak Ulang)</div>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(htmlNota);
+            printWindow.document.close();
+        }
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -249,7 +426,10 @@
 
         @if(session('success'))
         Swal.fire({ icon: 'success', title: 'Berhasil!', text: "{{ session('success') }}", confirmButtonColor: '#be185d' });
-    @endif
+        @endif
+        @if(session('error'))
+        Swal.fire({ icon: 'error', title: 'Ups!', text: "{{ session('error') }}", confirmButtonColor: '#be185d' });
+        @endif
     </script>
 </body>
 </html>
