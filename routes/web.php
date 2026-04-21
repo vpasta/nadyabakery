@@ -40,6 +40,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/stok/{id}', [ProdukController::class, 'update']); // Untuk Update
     Route::delete('/stok/{id}', [ProdukController::class, 'destroy']); // Untuk Hapus
 
+    // --- FITUR STOK KELUAR / AFKIR ---
+    Route::post('/stok/afkir/{id}', [ProdukController::class, 'afkir'])->name('stok.afkir');
+    Route::get('/stok-keluar', [ProdukController::class, 'riwayatAfkir'])->name('stok.riwayatAfkir');
+
     // Proses Checkout
     Route::post('/checkout', [TransaksiController::class, 'prosesCheckout']);
 

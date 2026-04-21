@@ -77,10 +77,16 @@
                     <h1 class="text-2xl md:text-3xl font-bold text-dark">Manajemen Stok</h1>
                     <p class="text-gray-500 mt-1">Kelola harga dan ketersediaan produk.</p>
                 </div>
-                <button onclick="bukaModalTambah()" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-secondary transition flex items-center space-x-2 shadow-sm w-full sm:w-auto justify-center">
-                    <i class="ph ph-plus-circle text-xl"></i>
-                    <span>Tambah Produk</span>
-                </button>
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+                    <a href="/stok-keluar" class="bg-white border border-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-semibold hover:bg-gray-50 transition flex items-center justify-center space-x-2 shadow-sm">
+                        <i class="ph ph-clock-counter-clockwise text-xl"></i>
+                        <span>Riwayat Afkir</span>
+                    </a>
+                    <button onclick="bukaModalTambah()" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-secondary transition flex items-center space-x-2 shadow-sm w-full sm:w-auto justify-center">
+                        <i class="ph ph-plus-circle text-xl"></i>
+                        <span>Tambah Produk</span>
+                    </button>
+                </div>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-primary-soft overflow-hidden">
@@ -118,6 +124,9 @@
                                 </td>
                                 <td class="py-4 px-6 text-center">
                                     <div class="flex justify-center space-x-2">
+                                        <button onclick="konfirmasiAfkir({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->stok }})" title="Buang Produk" class="text-orange-500 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 p-2 rounded-lg transition">
+                                            <i class="ph ph-warning-circle text-lg"></i>
+                                        </button>
                                         <button onclick="bukaModalEdit({{ $produk->id }}, '{{ $produk->nama_produk }}', {{ $produk->harga }}, {{ $produk->stok }}, {{ $produk->kategori_id }})" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition">
                                             <i class="ph ph-pencil-simple text-lg"></i>
                                         </button>
@@ -358,6 +367,66 @@
                 preview.classList.add('hidden');
                 teks.classList.remove('hidden');
             }
+        }
+
+        function konfirmasiAfkir(id, nama, stokMaks) {
+            if (stokMaks <= 0) {
+                Swal.fire({ icon: 'info', title: 'Stok Kosong', text: 'Tidak ada stok produk yang bisa dibuang.', confirmButtonColor: '#2EC4B6' });
+                return;
+            }
+
+            Swal.fire({
+                title: `Buang Stok: ${nama}`,
+                html: `
+                    <div class="text-left mb-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Dibuang (Maks: ${stokMaks})</label>
+                        <input type="number" id="afkir-jumlah" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none" min="1" max="${stokMaks}">
+                    </div>
+                    <div class="text-left mb-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alasan</label>
+                        <select id="afkir-alasan" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                            <option value="Basi / Expired">Basi / Expired</option>
+                            <option value="Rusak / Gosong">Rusak / Gosong</option>
+                            <option value="Jatuh / Hancur">Jatuh / Hancur</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="text-left">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan</label>
+                        <input type="text" id="afkir-catatan" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none" placeholder="Opsional...">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#f97316', // Warna Oranye Peringatan
+                cancelButtonColor: '#9ca3af',
+                cancelButtonText: 'Batal',
+                confirmButtonText: 'Proses Pembuangan',
+                preConfirm: () => {
+                    const jumlah = document.getElementById('afkir-jumlah').value;
+                    const alasan = document.getElementById('afkir-alasan').value;
+                    const catatan = document.getElementById('afkir-catatan').value;
+
+                    if (!jumlah || jumlah < 1 || jumlah > stokMaks) {
+                        Swal.showValidationMessage(`Harap masukkan jumlah antara 1 - ${stokMaks}`);
+                        return false;
+                    }
+                    return { jumlah: jumlah, alasan: alasan, catatan_opsional: catatan }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/stok/afkir/${id}`;
+                    form.innerHTML = `
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="jumlah" value="${result.value.jumlah}">
+                        <input type="hidden" name="alasan" value="${result.value.alasan}">
+                        <input type="hidden" name="catatan_opsional" value="${result.value.catatan_opsional}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         }
 
         if ('serviceWorker' in navigator) {

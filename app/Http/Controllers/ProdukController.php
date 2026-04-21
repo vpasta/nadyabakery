@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Produk;
+use App\Models\StokKeluar;
 use App\Models\Kategori;
 use illuminate\Support\Str;
 
@@ -91,5 +92,55 @@ class ProdukController extends Controller
         $produk->delete();
 
         return back()->with('success', 'Produk berhasil dihapus!');
+    }
+
+    /**
+     * Memproses pembuangan produk (Afkir)
+     */
+    public function afkir(Request $request, $id)
+    {
+        // Validasi input dari kasir
+        $request->validate([
+            'jumlah' => 'required|integer|min:1',
+            'alasan' => 'required|string',
+        ]);
+
+        $produk = Produk::findOrFail($id);
+
+        // Cek apakah jumlah yang dibuang tidak melebihi stok yang ada
+        if ($produk->stok < $request->jumlah) {
+            return back()->with('error', 'Gagal! Jumlah yang dibuang melebihi sisa stok.');
+        }
+
+        // Mulai mencatat ke database
+        try {
+            // 1. Kurangi stok di tabel produks
+            $produk->stok -= $request->jumlah;
+            $produk->save();
+
+            // 2. Tambahkan catatan ke tabel stok_keluars
+            StokKeluar::create([
+                'produk_id' => $produk->id,
+                'jumlah' => $request->jumlah,
+                'alasan' => $request->alasan,
+                'catatan_opsional' => $request->catatan_opsional,
+                'tanggal' => now()->toDateString(), // Mengambil tanggal hari ini
+            ]);
+
+            return back()->with('success', 'Produk berhasil dipindahkan ke daftar afkir!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menampilkan halaman riwayat pembuangan (Stok Keluar)
+     */
+    public function riwayatAfkir()
+    {
+        // Ambil data stok keluar beserta info produknya, urutkan dari yang terbaru
+        $stokKeluars = StokKeluar::with('produk')->orderBy('created_at', 'desc')->paginate(10);
+        
+        return view('bakery-stok-keluar', compact('stokKeluars'));
     }
 }
