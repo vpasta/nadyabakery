@@ -29,10 +29,11 @@
         @endif
 
         <form action="/login" method="POST" class="space-y-5">
-            @csrf <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" required placeholder="kasir@nadyabakery.com" 
-                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300 transition">
+            @csrf <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <input type="text" name="username" id="username" required 
+                       class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:outline-none transition" 
+                       placeholder="Masukkan username Anda">
             </div>
 
             <div>
@@ -51,7 +52,29 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
+        // Menangkap pesan error dari session 'error'
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Gagal!',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#F58E8B'
+            });
+        @endif
+
+        // Menangkap error validasi (jika input kosong)
+        @if($errors->any())
+            Swal.fire({
+                icon: 'warning',
+                title: 'Input Tidak Valid',
+                text: 'Username dan Password wajib diisi!',
+                confirmButtonColor: '#F58E8B'
+            });
+        @endif
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then((registration) => {

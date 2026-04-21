@@ -27,25 +27,37 @@ class SettingsController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = Auth::user(); // Ambil user aktif
+        // Simpan ID user ke dalam variabel menggunakan Facade Auth
+        $userId = \Illuminate\Support\Facades\Auth::id();
 
+        // 1. Validasi input
         $request->validate([
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'password' => 'nullable|min:6|confirmed', // Harus ada input password_confirmation di view
+            'username' => 'required|string|max:255|unique:users,username,' . $userId,
+            'password' => 'nullable|string|min:8|confirmed', // 'confirmed' otomatis mengecek field password_confirmation
         ]);
 
-        $user->email = $request->email;
-        
-        // Hanya update password jika diisi
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-        }
-        
-        if ($user instanceof User) {
-            $user->save();
-        }
+        try {
+            // Beritahu Intelephense bahwa ini adalah model User
+            /** @var \App\Models\User $user */
+            $user = \Illuminate\Support\Facades\Auth::user();
+            
+            // 2. Siapkan data yang akan diupdate (Username selalu diupdate)
+            $updateData = [
+                'username' => $request->username,
+            ];
 
-        return back()->with('success', 'Profil akun berhasil diperbarui!');
+            // 3. Jika field password diisi, maka enkripsi dan masukkan ke data update
+            if ($request->filled('password')) {
+                $updateData['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+            }
+
+            // 4. Proses Update
+            $user->update($updateData);
+
+            return back()->with('success', 'Akun berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui akun: ' . $e->getMessage());
+        }
     }
 
     public function updateQris(Request $request)

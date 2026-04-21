@@ -16,24 +16,18 @@ class AuthController extends Controller
     // 2. Memproses data email & password yang diinput
     public function prosesLogin(Request $request)
     {
-        // Validasi inputan tidak boleh kosong
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'username' => 'required', 
+            'password' => 'required'
         ]);
 
-        // Cek apakah email dan password cocok dengan di database
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-
-            // Jika berhasil, arahkan ke halaman kasir
-            return redirect()->intended('/kasir');
+            return redirect()->intended('/kasir'); 
         }
 
-        // Jika gagal, kembalikan ke halaman login dengan pesan error
-        return back()->withErrors([
-            'email' => 'Email atau password salah, coba lagi ya!',
-        ])->onlyInput('email');
+        // Mengembalikan pesan error jika gagal
+        return back()->with('error', 'Username atau Password salah!');
     }
 
     // 3. Proses Keluar (Logout)

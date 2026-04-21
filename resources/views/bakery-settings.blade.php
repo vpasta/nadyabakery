@@ -70,24 +70,37 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary-soft">
                     <div class="flex items-center space-x-2 mb-6 text-primary">
                         <i class="ph ph-user-circle text-2xl"></i>
-                        <h2 class="text-lg font-bold">Keamanan Akun</h2>
+                        <h2 class="text-lg font-bold">Pengaturan Akun</h2>
                     </div>
                     
-                    <form action="{{ url('/pengaturan/profile') }}" method="POST" class="space-y-4">
+                    <form action="/pengaturan/profile" method="POST" class="space-y-4">
                         @csrf
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Aktif</label>
-                            <input type="email" name="email" value="{{ $user->email }}" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ Auth::user()->username }}" required 
+                                       class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
+                                <input type="password" name="password" placeholder="Kosongkan jika tidak diubah" 
+                                       class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                                <p class="text-[10px] text-gray-400 mt-1">*Minimal 8 karakter</p>
+                            </div>
+                
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password Baru</label>
+                                <input type="password" name="password_confirmation" placeholder="Ulangi password baru" 
+                                       class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Kosongkan jika tidak ganti)</label>
-                            <input type="password" name="password" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
+                
+                        <div class="pt-2">
+                            <button type="submit" class="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-secondary transition shadow-sm">
+                                Simpan Perubahan
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
-                            <input type="password" name="password_confirmation" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-soft focus:outline-none">
-                        </div>
-                        <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-secondary transition">Simpan Perubahan</button>
                     </form>
                 </div>
 
@@ -124,7 +137,8 @@
                             <p class="text-sm text-gray-500">Kelola kategori produk roti Anda</p>
                         </div>
                     </div>
-                    </div>
+                
+                </div>
             
                 <form action="{{ route('kategori.store') }}" method="POST" class="flex gap-3 mb-6">
                     @csrf
