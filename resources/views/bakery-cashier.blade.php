@@ -479,25 +479,38 @@
         setInterval(updateJam, 1000);
 
         function cetakNota(data) {
-            const printWindow = window.open('', '_blank', 'width=350,height=600');
+            // 1. Hapus iframe lama jika sebelumnya sudah pernah cetak
+            let iframeLama = document.getElementById('iframe-nota');
+            if (iframeLama) {
+                iframeLama.remove();
+            }
 
-            // Template HTML untuk nota thermal
+            // 2. Buat iframe baru secara tersembunyi di latar belakang
+            const iframe = document.createElement('iframe');
+            iframe.id = 'iframe-nota';
+            iframe.style.position = 'fixed';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            document.body.appendChild(iframe);
+
+            // 3. Template HTML Nota (Sama seperti sebelumnya)
             const htmlNota = `
                 <html>
                 <head>
                 <title>Cetak Nota - ${data.nota}</title>
                 <style>
                 @page { size: 58mm auto; margin: 0; }
-                /* Lebar diperkecil ke 50mm dan ditambahkan margin auto agar berada di tengah */
-                body { font-family: 'Courier New', Courier, monospace; width: 50mm; margin: 0 auto; padding: 5px 0; font-size: 11px; }
+                body { font-family: 'Courier New', Courier, monospace; width: 50mm; margin: 0 auto; padding: 5px 0; font-size: 11px; color: black;}
                 .text-center { text-align: center; }
                 .line { border-bottom: 1px dashed #000; margin: 5px 0; }
                 table { width: 100%; border-collapse: collapse; }
                 .text-right { text-align: right; }
                 </style>
                 </head>
-                <body onload="setTimeout(function(){ window.print(); window.close(); }, 500);">
-                <div class="text-center">
+                <body> <div class="text-center">
                 <strong style="font-size: 13px;">NADYA BAKERY AND CAKE</strong><br>
                 Jl. Contoh No. 123, Jakarta<br>
                 Telp: 0812-3456-7890
@@ -533,8 +546,17 @@
                 </html>
             `;
 
-            printWindow.document.write(htmlNota);
-            printWindow.document.close();
+            // 4. Masukkan HTML ke dalam iframe
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(htmlNota);
+            doc.close();
+
+            // 5. Beri jeda 1 detik agar HP selesai merender HTML, lalu cetak
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            }, 1000); 
         }
         
         // Fungsi untuk mengosongkan seluruh isi keranjang

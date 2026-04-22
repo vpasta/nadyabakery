@@ -356,8 +356,24 @@
 
         // ================= FITUR CETAK NOTA DARI RIWAYAT =================
         function cetakNotaRiwayat(data) {
-            const printWindow = window.open('', '_blank', 'width=350,height=600');
+            // 1. Hapus iframe lama jika sebelumnya sudah pernah cetak
+            let iframeLama = document.getElementById('iframe-nota');
+            if (iframeLama) {
+                iframeLama.remove();
+            }
 
+            // 2. Buat iframe baru secara tersembunyi di latar belakang
+            const iframe = document.createElement('iframe');
+            iframe.id = 'iframe-nota';
+            iframe.style.position = 'fixed';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            document.body.appendChild(iframe);
+
+            // 3. Template HTML Nota (Sama seperti sebelumnya)
             const htmlNota = `
                 <html>
                 <head>
@@ -371,9 +387,7 @@
                 .text-right { text-align: right; }
                 </style>
                 </head>
-                <body onload="setTimeout(function(){ window.print(); window.close(); }, 500);">
-                <div class="text-center">
-                
+                <body> <div class="text-center">
                 <strong style="font-size: 16px;">NADYA BAKERY</strong><br>
                 Jl. Contoh No. 123, Jakarta<br>
                 Telp: 0812-3456-7890
@@ -405,13 +419,21 @@
                 </table>
                 <div class="line"></div>
                 <div class="text-center">Terima Kasih Atas Kunjungan Anda!</div>
-                <div class="text-center" style="font-size: 9px; margin-top: 5px;">(Salinan Cetak Ulang)</div>
                 </body>
                 </html>
             `;
 
-            printWindow.document.write(htmlNota);
-            printWindow.document.close();
+            // 4. Masukkan HTML ke dalam iframe
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(htmlNota);
+            doc.close();
+
+            // 5. Beri jeda 1 detik agar HP selesai merender HTML, lalu cetak
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            }, 1000); 
         }
 
         if ('serviceWorker' in navigator) {
